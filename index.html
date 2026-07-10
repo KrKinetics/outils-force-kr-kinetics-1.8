@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outils de Force | KR Kinetics</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; max-width: 700px; margin: auto; }
+        h1, h2 { color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; -webkit-appearance: none; appearance: none; background-color: #fff; }
+        .result { margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #d9534f; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; font-style: italic; }
+        .plate-summary { margin-top: 12px; font-size: 1.05em; line-height: 1.6; }
+        .plate-side { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; margin: 12px 0; min-height: 48px; }
+        .plate-badge { display: inline-flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 4px; color: #222; border: 2px solid rgba(0,0,0,0.15); }
+        .plate-badge.lb { min-width: 42px; height: 42px; font-size: 0.85em; background: #555; color: #fff; }
+        .plate-badge.kg { min-width: 44px; height: 44px; font-size: 0.8em; }
+        .plate-badge.kg.small { min-width: 32px; height: 32px; font-size: 0.7em; }
+        .plate-badge.kg.tiny { min-width: 24px; height: 24px; font-size: 0.6em; }
+        .bar-label { background: #888; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .plate-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 0.85em; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-swatch { width: 18px; height: 18px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.2); }
+        .plate-error { color: #c9302c; font-weight: bold; margin-top: 10px; }
+        .plate-note { font-size: 0.9em; color: #666; margin-top: 8px; }
+
+        .app-header { text-align: center; background: white; padding: 24px 20px 18px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .app-header img { max-width: 320px; width: 100%; height: auto; display: block; margin: 0 auto; background: #fff; }
+        .app-header .app-subtitle { margin: 10px 0 0; font-size: 1.35em; color: #333; letter-spacing: 0.5px; }
+        .sub-title { font-size: 0.95em; color: #555; margin-top: 14px; margin-bottom: 6px; font-weight: bold; }
+        .hint { font-size: 0.85em; color: #777; margin-top: 6px; }
+        .inline-action { margin-top: 8px; }
+        .btn-secondary { background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 0.85em; }
+        .btn-secondary:hover { background: #e6e6e6; }
+        .dots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+        .dots-box { background: #f8f8fb; border: 1px solid #e0e0e8; border-radius: 6px; padding: 14px; text-align: center; }
+        .dots-box .dots-label { font-size: 0.8em; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
+        .dots-box .dots-value { font-size: 1.6em; font-weight: bold; color: #d9534f; margin-top: 4px; }
+        @media (max-width: 520px) { .dots-grid { grid-template-columns: 1fr; } }
+
+        .equip-toggle { display: flex; gap: 0; margin-top: 8px; border-radius: 6px; overflow: hidden; border: 1px solid #ccc; }
+        .equip-btn { flex: 1; padding: 10px 8px; border: none; background: #f0f0f0; color: #333; font-size: 0.9em; font-weight: bold; cursor: pointer; transition: background 0.15s, color 0.15s; }
+        .equip-btn:not(:last-child) { border-right: 1px solid #ccc; }
+        .equip-btn.active { background: #d9534f; color: #fff; }
+        .equip-btn:hover:not(.active) { background: #e6e6e6; }
+    </style>
+</head>
+<body>
+    <div id="boot-error" style="display:none;background:#f8d7da;color:#721c24;padding:10px 14px;margin-bottom:12px;border-radius:6px;font-size:0.9em;"></div>
+    <header class="app-header">
+        <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAEBASwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACikpaACiiigAooooAKKKSgBaKKKACikpaACikooAWiiigAooooAKKSloAKKKSgBaKKSgBaKSloAKKSloAKKKKACiiigAooooAKKKSgBaKKKACikpaACikpaACiikoAWiikoAWiiigAopKWgAoopKAFooooAKKSloAKKSloAKKKSgApaSigBaKSloAKKSigBaKKSgBaKKKACiiigAooooASloooAKSiloAKKSloASlopKAFooooAKKSloAKKKguru2sbdri7uIoIV+9JK4VR+JoAmpa811/4y6Lp+6HSIX1Occbx8kQP+8eT+A/GuQ0Dxt4j8XePtHtrq9MVobjzGtbYbEIUFsHu3TuaV0ZurFOyPeaSlopmgUneiloASlpKKAClopKACiiigBaSiloAKKKSgApaKSgApaKKACiiigAooooAKSlooAKKSloAKKKKACiiigApKWigAooooAKz9asdL1DSp4dZgglsQpeQTj5VA/iz2x61fJAGScAda8E+J3xC/t2eTRdKmxpcLfvpVP/Hww/8AZB+p56YpN2InNRWpwusHTP7Yuv7GE/8AZ2/EHnnLkev0z0zzjGa674PW/n/ECGUDIgtpZM/UBf8A2aur+Ffw+8hYvEesQfvmG6zt5B9wH/low9T2HYc9Tx2+keCdM0LxVea3pw8gXcHlvbKPkVtwJZfTOOnSpSe5hCk7qR01JS0VZ1BRSUtABRRSUALRRRQAUlFLQAUUlLQAUUUUAFFFFABRSUtABRRRQAlFLRQAlFLRQAlFLRQAlFLRQBzHxB1y98OeCNQ1XTmjW6g8vYZE3Ly6qcj6E1wnwt+I3iHxZ4qm0/VZLVrdbR5QIoNh3BlA5z7mup+L/wDyTDV/+2X/AKNSvKvgT/yP1x/2D5P/AENKAOl+JnxL8SeFvGL6ZpclotsLeOQCWDcctnPOfavSPA+r3eveCtK1S+KG6uYd8hjXauckcD8K8L+Ni5+I8h/6c4f/AGavZ/hcMfDPQR/07/8AsxoA62ilry34n/EX+ykk0HRpv9PcYuZ0P/Hup/hH+2f0HvSbsTKSirsyvil8RPMabw5o03yDKXtyh6+san/0I/h61nfC/wCH39sSx69q0P8AxLomzbwuOJ2H8RH9wH8z7DnK+HXgGTxZffa71WTR7d8SHoZ2H8APp6n8OvTqfin4+SwgbwpoLrGVQR3csXAiXGPKXHQ46+g469JWurJoUZV53ZB40+Md5ba21n4aa2Nrb5SW4lj3iV++3n7o9e/0rtfBWr+IJ/Dc2v8Ai25tra2aPzYoxD5flxAZ3uc9+w9PrXl/ws+H/wDwkV6usalF/wASm2f93GRxcSDt/ujv6nj1r03xh498GaVcPoWvMLolVaW3W3Myr3AYdM9Dj6VSO/EezgvZwWvc8u1n45+IZdXuH0cWsGnb8QJNBucqO7HPU9cdulUP+F3eM/8Antp//gL/APZV2f8Awm3wg/6AcH/gqH+FH/Ca/CD/AKAcH/gqH+FM5Djk+N/jJWBMmnOB1U2x5/Jq6rQvj8GkWPX9I8tScGeyYsB9Ubn8ifpV2DxD8G9XP2aWwsLbdwGmsTCP++wOPzFV/EnwS02/sTqHhC9Csy70t5JfMhlH+y/JH4kj6UAesaRrWm6/p6X+lXkV1bP0eM9D6EdQfY1fr5F0DxBrngHxG8kKyQTwv5d3ZS5CyAdVYevoe3UcV9T+HtesvE2h22rae+6Cdc7T95GHBU+4PFAGnRS0UAJRS0UAJRS0UAJRS0UAJRS0UAJS0UUAFFFFABSUtFACUUUtACUUtFACUUtFAHDfF/8A5Jfq/wD2y/8ARqV5V8Cf+R+uP+wfJ/6Gleq/F/8A5Jfq/wD2y/8ARqV5V8Cf+R+uP+wfJ/6GlADfjQufiJJ/15w/+zV7H8MuPhtoQ/6d/wD2Y15D8ZRn4hyf9ekX/s1dbaeO4PCHwq0OCDZLq1xanyIjyEG4/O3t6Dufxqb6mKmlJ3Nz4kfEFPDNsdM051fV5kzkci3U/wAR/wBo9h+P18n8FeDb3xtrD73kSxjffd3ROSSedoJ6uf06+ma3hzw7qvjrxFJGsrsXfzby9k52Ankn1Y9h/QV7J4k1/SPhd4Ug07TIkN2yFbW3JyWPeWQ+mep7ngey31YqcJV5mf8AEDxnaeBtEh8OeH1jivjEFRU6Wsf94/7R7Z+p9/K/Avgy68a64Y2aRLGFt95c55552g92b9OTVLRtH1fxz4mMEbtNd3LmW5uZOQi93b+QH0Ar6b8O+H7HwxosGl6emIoxlnP3pGPVmPqarc9eTjhockfiZzXj/wAQf8K98Cx/2NaRo5ZbO1GPkhypO4jvgKfqeteK+BvAk/xFuNUnm1hreeB0eSSSLzWlZ9xJJ3Dn5f1r1D49f8iRZf8AYQT/ANAesP8AZ7+94h/7d/8A2pTPPG/8M9y/9DKv/gF/9nR/wz3L/wBDKn/gF/8AZ17lRQB85eI/ghruj2Ml5p13FqqRjc8SRmOXHcqMkN9M5+tYXw88e3ngzV4kkld9GmcC5tychAf+WijsR1PqPwr6qr5U+KumW+l/EfVYLVAkUpSfYBwGdQW/XJ/GgD0r43eFIL/Q4/FVkim4ttq3DJ/y1hY4DH12kjn0J9BWD8BvED22uXvh+V/3N3GbiFT2kXAbH1X/ANBrvtAJ1n4ExLd/P5mkSRkt/sqyg/8Ajorw34ZXDwfEfw+6Zy8+w49GRgf50AfWVFLRQAUlLRQAlFLSUAFFLRQAUlLRQAlLRRQAUUUUAFJS0UAFFFFABRRRQAlFLRQBw3xf/wCSX6v/ANsv/RqV5V8Cf+R+uP8AsHyf+hpXqvxf/wCSX6v/ANsv/RqV5V8CP+R+uP8AsHyf+hpQBN8Yv+SgSf8AXpF/7NXMeH/D+o+KdYi06wUtIQN8r52wxj+I+w7Dv0rtviRo194g+K66Zp0XmXEtrFyfuovzZZj2Arug/h74PeDw07NLcSt820DzruX2HYD8gPc8xa7OX2bnN9ia8vND+E3g5Iol8yZsiKPIEl1Ljlj7ep6AYHpXgk0us+NvE+4hrvU72TCqOFUeg/uoo/IV7L4y8M2HxN8O23iHw9crLexxEQ5bAlXqY2B+6wP68Hjp5D4W8R33gnxL9tW3y6ZguraVdrFc/MvP3WBH6elNntYSMVTbh8R9EeCfB9p4O0RbSIiW7lw91cY5kf2/2R0A/wATXSVn6Hrdh4h0mHUtNmEtvKPoVPdWHYj0rRqjhm5OTctzyv49/wDIkWX/AGEE/wDQHrD/AGe/veIf+3f/ANqVufHv/kSLL/sIJ/6A9Yf7Pf3vEP8A27/+1KCT3Civk/xhr2sw+Nteih1jUY40v5lVEunCqA54AB4FV4T45uYUmgbxJLDIAySRtOysPUEcEUAfU+ta5p3h7TZL/VLuO3t4xnLHlj6KOpPsK+T/ABFq914x8X3WoRwOZ7+cJbwdWA4VF+uAPxzV6HwZ438Q3S79J1aeToJb3coX/gUh4r1/wF8L7PwVu8QeIbu3kvoULKc4htRjk5PVscZ7dvWgDU8SNH4G+DMtkZF82KwWyjP9+VxtOPxJP4V498HNMbUPiRYOFJjso5Lhz6YXav6sKd8UfiB/wmOqJbWTMuj2bExZGDM/QyEemOAPTJ716p8G/Bsnhzw9Jqd9EY9Q1La+xh80UQ+6p9Cckn6gdqAPS6SiloAKKKSgApaKKACkpaKACkopaACiiigAooooAKKKKACiikoAWiiigApKKWgDhvi//wAkw1f/ALZf+jUryr4E/wDI/XH/AGD5P/Q0r1X4v/8AJL9X/wC2X/o1K8q+BH/I/XH/AGD5P/Q0oA9p8Ta1ofgq0u/EN7Ggup1WIBf9ZcFQdqL7ck+g5Jr5n1rWtb8e+JhPNHJc3k52W1pACwjXrsQfqT36muq+OM80nxCELyu0UVnH5aFvlTJbOB2zgflXpHwb8KaZp3hS015IvM1LUIizzP1jXJGxfQcc+v5UAeN+BfHN/wCBdYZgry2Er7bu0PBOONy56OP16H29Y8a+DtO8f6NH4p8LyRy3rx7sJwLlR/CfRx059MH2b8UvhaNbWXXtBhC6oo3XFsvAuQO4/wBv+f1ryzwD49vvA2qsGWSXTJnxd2h4IPQsoPRx6d8YPYgLhOUJc0Sbwb4x1DwRrTSIjvau2y8s243Y4zg9HH/1jX0xpGr2Ou6ZDqOnTrNbTDKsOoPcEdiO4rzHx14IsfGukp4r8KtHNdSJ5jpF0ul/pIOnvjB5rznwP42vvBWrE7XlsJXxd2p4PHG5Qejj9eh9lsds4RxEeeG56d8ev+RIsv8AsIJ/6A9Yf7Pf3vEP/bv/AO1K6n4j6bJ4/wDh3Bc+HJI7wJKt3GinmVQrAqP9rnofTHWuX/Z8BEniJWBVgYAQRgg/vMg0zz2rbifGrwFgv4s0yLjgahGo/AS/0b8D61Q+DPj46deJ4X1Ob/Q7hv8AQpHP+qkP/LP/AHW7e/1r3yWKOeF4pUV45FKujDIYHqCPSvln4k+B5PBfiHFurnSrol7ST+53MZPqvb2x70Aew/Er4ga74IuLcWuj209ncriO7lkYgOOqMoA5xyOeefSvE9Y8U+K/H17HZ3E094XbMVjax4TPrtHXHqc4r1vwXrtl8UvBN14Z15t2pQRgO/8AE4H3Jl/2gcZ9/Y143dW+tfD7xjs3mHUdPl3RyD7sq9j7qw4I9yO1AHq/w8+DjWFzDrHihUeeMh4LAEMqN2aQ9CR6Dj617LWJ4T8T2fi7w9b6rZnG8bZoieYpB95T/nkEGtygApKKWgAoopKACloooAKSiloAKKSigApaKKACiiigAoopKAFoopKAFooooAKKSloA4b4v/wDJL9X/AO2X/o1K8q+BP/I/XH/YPk/9DSvVfi//AMkv1f8A7Zf+jUr548KeK7/wdqz6lp0VvJM8JhInUldpIPYjngUAdT8bv+SkSf8AXnD/AOzV7R8Lf+SZaD/17/8Asxr5r8U+Jr3xbrR1XUI4I5zEsW2BSFwucdSeea+lPhb/AMky0H/r3/8AZjQB19eS/FP4WjWll1/QYQNTUbri2QYFyP7w/wBv/wBC+tetUUAfK3w++IF54H1No5Vkm0qZ/wDSbbuh6F0B6MO4749cV6V4+8C2fivTV8W+FDHPNMnmyxw9Lpf7y+kg7jvjHWl+Knwu/tYTeINAg/4mIG66tUH/AB8D+8o/v/8AoX16+cfDr4h3XgnUDBOJJ9Hnf/SIP4om6F0Hr6jv9aC6dSVOXNEseAvHd34M1MpIJJtLmb/Sbbup6b1HZh3Hf8q+gtEsdFe5ufEOj+WRqyRtLJEfklK5w2OzckH6c815v8QvAVr4isB4t8KbJ3mTzpooOVuF/vp/t+o7/XrxPw+8f3Pg6+8iffNo875mhHJiP99B6+o7/WlsdlSEa8faQ3PpmsXxV4asvFvh+40m9GFkG6OUD5opB91h9P1GR3rTs7y21CzhvLOZJreZQ8ciHIYGpqZwHyEra18P/GWceTqWnS8jnbIp/mjL/P1FezeLNHsfiz4EtvEGiKP7UtkJjQ/eJH34G988j3x2NaHxa8BHxTpA1PTos6vYoSqqOZ4+pT6jqPfI714j4P8AHeseCZbltN8mSK4A8yC4UlNw6NgEEHt/+qgC78OPG0ngnxFuuN/9m3JEd7Fg5THAfHqvOfbI9K+popY54UmhdXikUMjqchgeQQfSvjfXtYfxBrVxqstpbW01wd0iWwIQt3bBJ5Pf3r1z4K+PMbPCWpy+p0+Rj+Ji/mV/EelAHt9FFJQAtFFJQAtFJS0AFFJS0AFFFJQAUtFFABRRRQAUUUlAC0UUUAFFJXgvjn4reKtB8aarplhPaLa20irGHtwxAKKeTn1JoA97oqlPqVtYaQ2o386QW8UXmyyucBRjmvDLj4veLvEHir7D4Vt4Vhnk8u1glg3uwH8bnPHqewFAHuup6XY6zp8lhqNslzaS43xSDhsHI/UCud/4Vl4J/wChcsf++T/jUXivVNc8L/DS71Fr2CfWLaNC04hAjLF1BwvpgkCuY+Evj3X/ABfq+p22sTW7x28CSRiKEJgliDQB1n/CsfBP/QuWX/fJ/wAa6PT9Ps9JsIbGwgS3tYV2xxJ0Ue1eM/EX4n+J/DXjm80vTZbQWkKRMqywbj8yAnJz6mvT/B3iyy8Y+H4dStCEkHyXEBOWhk7qfbuD3FAHQ0V5h8XPG+t+D30hdHlgT7UJTL5sW/O3bjHp1Nb3w28Raj4l8ERarqbxPdNLKpMabRhWIHFAHY1zV78P/CWo3s15d6BZS3Ezb5JCmCx9TjvXhTfGvxrubFzY8E4/0Uf40f8AC6vG3/PxZf8AgJ/9egD6J0fQ9M8P2bWmlWcdpbs5cxx527j1OO1Zl14A8J3t3LdXGg2ck8zF5H2Y3Mep4rz/AMP/ABF8R6j8MfE2u3E1v9v0+RVt2W3woBC9Rnnqa4j/AIXX42/5+bL/AMBB/jQNScdmfRmkaLp2hWhtNLtUtbcsX8tCduT1Iz0q/XzJ/wALr8bf8/Nj/wCAg/xrvvhR8QPEPi3xDfWWsSQNDDaeanlwbDu3gdc+hoBtvVnrtcxc/DrwfeXc11ceH7J55nLyOUPzMeSa8o8J/FfxXq/jfTNLu7i0NrcXZikVbcA7ee+favbdb1vT/DukT6nqc4htYRyepY9lA7knoKBGJ/wrLwV/0Llj/wB8n/Gnw/Dfwdbzxzw+H7OOWJw6OoIKsDkEHPXNeQa78dtfvLll0W2t9Pt84QyJ5srfXPyj6AH61SsPjZ4xsbpTfG1vEH3oZrfymI9iuMfkaAPpWiuY8M+OtJ8S+F5tdQvawWwb7Usw/wBSVGW56EY7j+fFeQ+Ifjnrl9etF4dgis7XdiN5IvNmk98HgfTB+tAH0LRXzRB8YPHmlzo19JHKhP8Aq7uy8vd9CApr3vwhr03ibwrY6xPZfY3ukLeVv3DGSAQcDg4yPrQBuUUlLQAUUlFAC0UUlABS0lLQAUUUUAFFFJQAtFFJQAtfKHxR5+JevD/psv8A6LWvq6vlH4onHxL14/8ATZf/AEWtAGh8RviFL4tnh02xd49GttoRT8pncDG9vQDsD9T7eyfDTwDbeD9IFzMYp9Wu0BmnQ7lRTyEQ/wB337nn0rx7X/hPq2heCbfXncTTAb722QZ8hD90g98fxfXjgGuu+DHxAyI/Cmqzcj/kHzOeo/55E+38P5dhQB3Hxb/5JfrX+7H/AOjUrzj9n7/kYNb/AOvWP/0I16P8XP8Akl+tf7sX/o1K84/Z/wD+Rg1v/r1j/wDQzQBzXxkIHxP1MnoIof8A0WKoeFPEeqfDvxX5ssMqp8qXto3HmRkZBHbIByp9/Q1e+M//ACUvVf8ArjD/AOixXp3j/wCH3/CU+EbDU9NiH9s2lpHtVf8Al4jCglD7jqv5d6AOa+OOpWer6f4W1CwmWa1uEneORehHyfr2x2rs/gv/AMkwg/67z/8AoZr5we6uGtI7OSWQwQyO6RN0jZsBsDtnaM/SvpD4L/8AJMIP+u8//oZoA8D8KarbaF4v03VLxJHt7WcvIsagsRgjgH617b/wvTwj/wBA/U//AAHj/wDi68U8H6Zaaz400zTb8M1rc3BSUK+04wx69ugr3j/hTHgY/wDLG5/8DW/xoA7Pw/rFn4j0C11ayidLW6UsiSoA3BI5AyO1YXxRijX4Z66RGoItxyB/tLXQ6HpVjoWj2+ladkWtsu2MM+8gEk8n8TWB8U/+SZa9/wBe4/8AQloA8p+Aaq3i7VAygj7AOo/6aLX0IqKp+VQPoK+fPgD/AMjfqn/Xh/7UWvoWgD5M8A/8lP0X/r/P/s1dv8fdYll1rTNFViIIIDcuvZnYlRn6BT/30a4jwD/yU/Rf+v8AP/s1dp8fNImh8Q6drAQm2uLf7Oz9hIpJAP1DfoaAOv8Ag54N0+w8LWuvT28c2pXwMiyuuTFHnCqvpwMk+/tXceIvC+keKdOez1a0SZCPlkHEkZ9VbqDXC/B7xppl54WtNAuLqODUrFTGscrBfNTJKlc9eDgjrxXb+I/Fmj+FdOe91S7VAB8kKENJIfRV7mgDJ8Y+HVj+FuqaHoVoI1S12wwRDqFIYgepIB9yTXz98PvF1v4M8RNqVxp/2yN4jCQCBJFyDuXPfjBHFfUNlrumahoa6za3kUmnmIymfPCqBk59CMHIPSuNk8L/AA8+I8TajaLbyzScvPZyGKUH/bX1/wB4UAMtfil4D8VxHTtQkESTDaYdSgARs9t3K/qK7+zt7e1soLe0REtoo1SJU+6EAwAPbFfN/wAS/htaeCbe1u7LU2nhuZTGLe4A8xeCcgj7w4weBjIr0f4F6ld3ngm4trh2eOzuzFAzHOEKq236Ak/nQB6hSUUtABRSUUALRRSUAFLSUtABRRRQAUlLSUALSUtFACV4R44+E/inX/GeqapYpZG1uZFaMyXG1sBFHIx6g17vXBXHxDltNT1uKW2tTDpjugiWR/OlICbTymwAs4B+bgc4oA7iOEfZFglVWXywjqRkHjBHuK8H8S/BLWo/EMs/hlrcaezCWESTmN4GznaODwDyD/hXoGp+ONW0VpLLUbHTIL5Zbf8AeG8b7MIpi4DM23KkGMgjHOQasaX4x1XXjbx6VpVoZRbi5uTPdMqFDI6L5RCEsG8tmDEAYx60AQaxo3ijxF8KrnRtRhtBrsiJGWWb93LtdTvzjgkDkY61jfCfwBrvg/VdSudXW2EdxAkcfky7zkMSc8D1rrfDfie813V9Qt5LaGK3tZpolKiUsSkhQEsUCHOCcBiR+dSy67qdx4lutN0ywtpbfTzF9sluLgox8wbsRqFOcLzzjPQetAHmfxH+FvibxP4zv9U01LM2s0caoZZ9rZVADxj1Fez6fC9tptrBJjfFCiNg8ZAANcTL8QL630yPVJ9LtxZX1tPPp+24JkPlxtIBKNuF3KpOQTt6GiL4iXGo/u9N06IXHm2lu0V1KyGGWUyB0fCkgr5Y6dQ2aAOb+I/wiutb1sav4cFsktwT9rglfYpf++pweT3Hrz612fw58Oah4Y8ExaVqIiF0ssrERPuXDMSOcCoB411KZ5bOHTrRdQt4rozpJcMYw8DR52sFyQVkyOAQeDUMfjvUY7Oze50u2M97Yw3NvHFcHaWmlWONWZl4++CTjjHGaAPJT8EfGZJPl6eMkn/j6/8AsaP+FJeNP7lh/wCBZ/8Aia9buviBdaRdpZ6ppaefDeLBevaStIkcTRGUSrlQSAAdwIyACeeKpSfFUQW3nz6eghk0+W5hnWUmMyrJKiRsccBxHw3qcelADPhL4J1rwcNXGrrbj7UYjF5Mu/7u7OeBjqK6vxxo93r/AIK1TSrERm6uYtkfmNtXO4Hk/hWHJ48v0n19l0+3a30qOVgMy7pSkasPm2eWMlsY3Z9qivvicghmk02w88Q6abuUysV8uYPGpgIAJ3Lvy3px60AY3wp+Huv+D/EF9easlqIZrXykMM287t4PTA7CvWq4O4+IUulmx/tSyjWO6gnle4jEqJCUZVTeJEVgrM23JGASOxzV7SfEmt6lr1laNYWEdpcafHflxO5kVHGNuNuNwb3xigDzTwr8JfFOkeN9N1W7SyFrb3ZlcpcZbbz0GPevadc0PT/EekT6XqcAmtphgjoVPZlPYjsa5y18V6vqOsaxZWdlZAWMssUZmM43lNvJcRlBnPQMT7U7/hL9Rt/ANv4kuNLhlnuGgaKztZSxZJWUAZIHz/MeOmcc0AeTa78CvENncMdHnt9Sts5TzHEUq/UH5T9QfwFVNO+CXjC9uVF6lpYx/wAUss4kIHsFzn8xXsekeO11nWYba0t43s55riOOcOckRxRPyMcHMhUjttqnZeN9avTaTLplgLWfSm1Qn7Q+8IoAK424zuYY56UAS2/wx06z8AXfhW0vrqEXnzXF2MF5H4zlem04A2jHHfvXk9/8EvGGnXRfTmtbxR92WCfyXx7hsY/M16dpfxGu9SW2ijsrCWaee3iEtvdM8KmWORtrNtBDqUGV54YGp7fx1qNvZreavp9pHB9ouoG+yzM7D7OkrOcMo6mLj2PNAHlVl8GPGmqXanU3htU6NNcXPnMB7BSc/mK948LeGrLwloEGk2O5o48s8j/elc/eY/X9BgVzV9491XSLaQ3+iwPcyWsd5aw2t0ZPMRpUjKElRhx5i4IyD610PhnxLD4mXUJrVB9mt7gRRPk5fMaMdwI+VgWKkeq0AbtFFLQAlLRSUAFFLRQAlLSUtABRRRQAUlLRQAUlLRQAlUf7G077NfWzWcTQX7tJdRuNyyswAYkH1AFX6KAMKz8H6BYxhINOUYnS43PI7sXQEKSzEkgAkAE4GelNm8F+Hp47ZJNOXbbArFslddqltxTIIymf4TkD0rfpKAOel8FaI5maOGaBp5hPIY7iTBbzBIflLbRll5wO5q5e+GtI1DVItSubMNeRbcSK7Lu2nK7gCA2DyN2cVrUUAYCeCvDsct1Iulxg3UckUg3sVCSffCrnCbu+0DNS3nhPQ75p2uNPQvcNE0ro7IzNGCEOVIOQCRmtmloAyLXwxotkkS22nxxiKGWFcE/ckIL555LFQSTzx1om8L6JcWwt5tOieEWi2QRiSBCCCF69iAQevHWtekoAx7HwromnCEWtgqmKVp1ZnZ2LshRmZmJLHacc54qMeDvDw0+TT/7Kg+ySW/2Voedpi3lwvXjDMSMdM1u0lAGHJ4O0GW4upnsSWu1ZZ18+QJJuXacru25IAGcVPd+GdGvkkW40+JhKjpJtyu4OVZ84xySinPXitWloAxU8KaIkLRNZeajwyW7CeV5cxyEF1JYnglV/KrlrpFhZzQzW9ssckNstpGwJO2JTkLV6igDIg8M6TbapNqMNs6XM7M0pE8m1mYYYlN23J9cVONE00aVbaWLVfsVqYzDFuOE8sgpznPBUflWhSUAYd14P0C8hlim05Asty105jdo281htZgVIIyODjg96uf2FpYVVFlGqpaGyVVyAsBxlAB24H5Vo0lAGTF4X0WCaKWLT40eJonTDNgNGpRDjPUKSM+nXoKlXQdLXysWUeIppZ0BJIDyBhIcHrne3HTmtGigDBtfBXh2ziljg0xFWUx7t0jscRsHRQSSVUMAQowPatSz02y0+S6ktLdIWu5jPOUH35CACx9yAKtUUAFFLRQAlFLSUAFFLRQAlLSUtABRRRQAUlLRQAUlLRQAlLRRQAlFLRQAlFLRQAUlLRQAlLRRQAlFLRQAlFFLQAUlLRQAlLRRQAlFLRQAUlLRQAUlLSUAFLRRQAlFLRQAUlLRQAlLRRQAUUUUAFJS0lAC0lLSUAFLRSUAFFLRQAUlFLQAUlLSUAFLRSUAFFFLQAUlFFAC0lLSUAFLRSUAFFFLQAUlFFAC0lLSUAFLRRQAlFFLQAUlFZmsa3b6MLUz4InmEZ5xsU9X+g4zQBp0tJS0AFFFFABRSUUAFLSUUALRSUUALRSUUALRSUUALRSUUALRSUUALSUUUALRSUUALRRSUALRSUUAFFFFAC0UlFAC0UlFAC0UlFAC0lFFAAehGcV5z4t0S+gvorgzyXq3LiGPfjcrHonpg16NTXjjk270VtjblyM4Pr9aAMzQNKuNJ09ILi9kuGA+6fuR+y98fU/gK1qSloAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/9k=" alt="KR Kinetics">
+        <p class="app-subtitle">Outils de Force</p>
+    </header>
+
+    <!-- CALCULATEUR RAMPING -->
+    <div class="card">
+        <h2>Ramping Warm-up</h2>
+        <label for="targetWeight">Charge désirée (Top Set) :</label>
+        <input type="number" id="targetWeight" value="515">
+
+        <label>Équipement :</label>
+        <div class="equip-toggle" id="warmupEquipment">
+            <button type="button" class="equip-btn active" data-equip="barbell">Barbell</button>
+            <button type="button" class="equip-btn" data-equip="dumbbells">Dumbbells</button>
+            <button type="button" class="equip-btn" data-equip="machine">Machine</button>
+        </div>
+        <input type="hidden" id="warmupEquipmentValue" value="barbell">
+
+        <label for="topReps">Répétitions du Top Set :</label>
+        <select id="topReps">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+        <p class="hint" id="warmup-target-hint">Charge totale sur la barre (barre olympique incluse).</p>
+
+        <table id="warmup-table">
+            <thead>
+                <tr>
+                    <th>Série</th>
+                    <th>Reps</th>
+                    <th>%</th>
+                    <th id="warmup-charge-header">Charge (lb)</th>
+                </tr>
+            </thead>
+            <tbody id="warmup-body"></tbody>
+        </table>
+    </div>
+
+    <!-- CALCULATEUR 1RM -->
+    <div class="card">
+        <h2>Calculateur de 1RM Estimé</h2>
+        <label for="charge">Charge (lb) :</label>
+        <input type="number" id="charge" value="315">
+
+        <label for="reps">Répétitions :</label>
+        <select id="reps">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+        </select>
+
+        <label for="rpe">RPE :</label>
+        <select id="rpe">
+            <option value="10">10</option>
+            <option value="9.5">9.5</option>
+            <option value="9">9</option>
+            <option value="8.5">8.5</option>
+            <option value="8">8</option>
+            <option value="7.5">7.5</option>
+            <option value="7">7</option>
+            <option value="6.5" selected>6.5</option>
+        </select>
+
+        <div class="result" id="rm-result">1RM Estimé : -- lb</div>
+    </div>
+
+    <!-- CALCULATEUR RPE → CHARGE -->
+    <div class="card">
+        <h2>Charge cible (RPE → Poids)</h2>
+        <p class="hint">À partir d'un 1RM connu, calcule la charge pour un nombre de reps et un RPE visé.</p>
+
+        <label for="targetRm">1RM de référence (lb) :</label>
+        <input type="number" id="targetRm" value="400" step="2.5">
+        <div class="inline-action">
+            <button type="button" class="btn-secondary" id="use-estimated-rm">Utiliser le 1RM estimé ci-dessus</button>
+        </div>
+
+        <label for="targetReps">Répétitions visées :</label>
+        <select id="targetReps">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+        </select>
+
+        <label for="targetRpe">RPE visé :</label>
+        <select id="targetRpe">
+            <option value="10">10</option>
+            <option value="9.5">9.5</option>
+            <option value="9">9</option>
+            <option value="8.5">8.5</option>
+            <option value="8" selected>8</option>
+            <option value="7.5">7.5</option>
+            <option value="7">7</option>
+            <option value="6.5">6.5</option>
+        </select>
+
+        <div class="result" id="target-load-result">Charge cible : -- lb</div>
+    </div>
+
+    <!-- CALCULATEUR PLATES -->
+    <div class="card">
+        <h2>Barbell — Calculateur de Plates</h2>
+
+        <label for="plateUnit">Unité :</label>
+        <select id="plateUnit">
+            <option value="lb" selected>LB (pounds)</option>
+            <option value="kg">KG (compétition IWF)</option>
+        </select>
+
+        <label for="plateTotal" id="plateTotalLabel">Charge totale sur la barre (lb) :</label>
+        <input type="number" id="plateTotal" value="225" step="2.5">
+
+        <label for="plateBar" id="plateBarLabel">Poids de la barre (lb) :</label>
+        <select id="plateBar"></select>
+
+        <div class="result" id="plate-result">--</div>
+        <div class="sub-title" id="plate-subtitle">Disposition par côté (de la barre vers l'extérieur) :</div>
+        <div class="plate-side" id="plate-visual"></div>
+        <table id="plate-table">
+            <thead id="plate-thead"></thead>
+            <tbody id="plate-body"></tbody>
+        </table>
+        <div class="plate-legend" id="plate-legend"></div>
+        <div class="plate-note" id="plate-note"></div>
+    </div>
+
+    <!-- WILKS / DOTS -->
+    <div class="card">
+        <h2>Wilks &amp; DOTS (Powerlifting)</h2>
+        <p class="hint">Compare un total SBD (Squat + Bench + Deadlift) entre athlètes de poids différents.</p>
+
+        <label for="dotsUnit">Unité :</label>
+        <select id="dotsUnit">
+            <option value="kg" selected>KG</option>
+            <option value="lb">LB</option>
+        </select>
+
+        <label for="dotsSex">Sexe :</label>
+        <select id="dotsSex">
+            <option value="m">Homme</option>
+            <option value="f">Femme</option>
+        </select>
+
+        <label for="dotsBw" id="dotsBwLabel">Poids corporel (kg) :</label>
+        <input type="number" id="dotsBw" value="100" step="0.1">
+
+        <label for="dotsTotal" id="dotsTotalLabel">Total SBD (kg) :</label>
+        <input type="number" id="dotsTotal" value="500" step="2.5">
+
+        <div class="dots-grid">
+            <div class="dots-box">
+                <div class="dots-label">Score DOTS (IPF)</div>
+                <div class="dots-value" id="dots-score">--</div>
+            </div>
+            <div class="dots-box">
+                <div class="dots-label">Score Wilks</div>
+                <div class="dots-value" id="wilks-score">--</div>
+            </div>
+        </div>
+        <div class="plate-note" id="dots-note"></div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="footer">
+        KR Kinetics · Créé et conçu par Kev Roots · 05-06-2026
+    </div>
+
+    <script>
+        // Table RPE (Lignes = RPE, Colonnes = Reps 1 à 12)
+        const rpeTable = {
+            "10":  [1, 0.955, 0.922, 0.892, 0.863, 0.837, 0.811, 0.786, 0.762, 0.739, 0.707, 0.68],
+            "9.5": [0.978, 0.939, 0.907, 0.878, 0.85, 0.824, 0.799, 0.774, 0.751, 0.723, 0.694, 0.667],
+            "9":   [0.955, 0.922, 0.892, 0.863, 0.837, 0.811, 0.786, 0.762, 0.739, 0.707, 0.68, 0.653],
+            "8.5": [0.939, 0.907, 0.878, 0.85, 0.824, 0.799, 0.774, 0.751, 0.723, 0.694, 0.667, 0.64],
+            "8":   [0.922, 0.892, 0.863, 0.837, 0.811, 0.786, 0.762, 0.739, 0.707, 0.68, 0.653, 0.626],
+            "7.5": [0.907, 0.878, 0.85, 0.824, 0.799, 0.774, 0.751, 0.723, 0.694, 0.667, 0.64, 0.613],
+            "7":   [0.892, 0.863, 0.837, 0.811, 0.786, 0.762, 0.739, 0.707, 0.68, 0.653, 0.626, 0.599],
+            "6.5": [0.878, 0.85, 0.824, 0.799, 0.774, 0.751, 0.723, 0.694, 0.667, 0.64, 0.613, 0.586]
+        };
+
+        let lastEstimatedRm = null;
+
+        function roundToHalf(value) {
+            return Math.round(value * 2) / 2;
+        }
+
+        function getEstimatedRm() {
+            const charge = parseFloat(document.getElementById('charge').value);
+            const reps = parseInt(document.getElementById('reps').value, 10);
+            const rpe = document.getElementById('rpe').value;
+
+            if (isNaN(charge) || !rpeTable[rpe] || !rpeTable[rpe][reps - 1]) return null;
+
+            const intensity = rpeTable[rpe][reps - 1];
+            return charge / intensity;
+        }
+
+        function calculate1RM() {
+            const rm = getEstimatedRm();
+
+            if (rm === null) {
+                document.getElementById('rm-result').innerText = '1RM Estimé : -- lb';
+                lastEstimatedRm = null;
+                return;
+            }
+
+            const charge = parseFloat(document.getElementById('charge').value);
+            const reps = parseInt(document.getElementById('reps').value, 10);
+            const rpe = document.getElementById('rpe').value;
+            const intensity = rpeTable[rpe][reps - 1];
+
+            lastEstimatedRm = rm;
+            document.getElementById('rm-result').innerText =
+                `1RM Estimé : ${rm.toFixed(1)} lb (Intensité: ${(intensity * 100).toFixed(1)}%)`;
+        }
+
+        function calculateTargetLoad() {
+            const rm = parseFloat(document.getElementById('targetRm').value);
+            const reps = parseInt(document.getElementById('targetReps').value, 10);
+            const rpe = document.getElementById('targetRpe').value;
+            const resultEl = document.getElementById('target-load-result');
+
+            if (isNaN(rm) || !rpeTable[rpe] || !rpeTable[rpe][reps - 1]) {
+                resultEl.innerText = 'Charge cible : -- lb';
+                return null;
+            }
+
+            const intensity = rpeTable[rpe][reps - 1];
+            const load = roundToHalf(rm * intensity);
+            resultEl.innerText =
+                `Charge cible : ${load.toFixed(1)} lb (${reps} reps @ RPE ${rpe} · ${(intensity * 100).toFixed(1)}%)`;
+            return load;
+        }
+
+        function clampBw(bw, sex) {
+            return Math.max(40, Math.min(sex === 'm' ? 210 : 150, bw));
+        }
+
+        function dotsCoeff(bw, sex) {
+            const x = clampBw(bw, sex);
+            if (sex === 'm') {
+                return 500 / (
+                    -0.0000010930 * Math.pow(x, 4) +
+                    0.0007391293 * Math.pow(x, 3) +
+                    -0.1918759221 * Math.pow(x, 2) +
+                    24.0900756 * x +
+                    -307.75076
+                );
+            }
+            return 500 / (
+                -0.0000010706 * Math.pow(x, 4) +
+                0.0005158568 * Math.pow(x, 3) +
+                -0.1126655495 * Math.pow(x, 2) +
+                13.6175032 * x +
+                -57.96288
+            );
+        }
+
+        function wilksCoeff(bw, sex) {
+            const x = clampBw(bw, sex === 'm' ? 'm' : 'f');
+            const maxBw = sex === 'm' ? 201.9 : 150;
+            const clamped = Math.max(40, Math.min(maxBw, x));
+            if (sex === 'm') {
+                return 500 / (
+                    -216.0475144 +
+                    16.2606339 * clamped +
+                    -0.002388645 * Math.pow(clamped, 2) +
+                    -0.00113732 * Math.pow(clamped, 3) +
+                    7.01863e-6 * Math.pow(clamped, 4) +
+                    -1.291e-8 * Math.pow(clamped, 5)
+                );
+            }
+            return 500 / (
+                594.31747775582 +
+                -27.23842536447 * clamped +
+                0.82112226871 * Math.pow(clamped, 2) +
+                -0.00930733913 * Math.pow(clamped, 3) +
+                4.731582e-5 * Math.pow(clamped, 4) +
+                -9.054e-8 * Math.pow(clamped, 5)
+            );
+        }
+
+        const LB_TO_KG = 0.45359237;
+
+        function toKg(value, unit) {
+            return unit === 'lb' ? value * LB_TO_KG : value;
+        }
+
+        function updateDotsUnit(previousUnit) {
+            const unit = document.getElementById('dotsUnit').value;
+            const bwInput = document.getElementById('dotsBw');
+            const totalInput = document.getElementById('dotsTotal');
+            const unitLabel = unit.toUpperCase();
+
+            document.getElementById('dotsBwLabel').innerText = `Poids corporel (${unitLabel}) :`;
+            document.getElementById('dotsTotalLabel').innerText = `Total SBD (${unitLabel}) :`;
+
+            if (previousUnit && previousUnit !== unit) {
+                const bw = parseFloat(bwInput.value);
+                const total = parseFloat(totalInput.value);
+
+                if (!isNaN(bw)) {
+                    bwInput.value = unit === 'lb'
+                        ? Math.round(bw / LB_TO_KG)
+                        : (bw * LB_TO_KG).toFixed(1);
+                }
+                if (!isNaN(total)) {
+                    totalInput.value = unit === 'lb'
+                        ? Math.round(total / LB_TO_KG / 5) * 5
+                        : (total * LB_TO_KG).toFixed(1);
+                }
+            }
+
+            bwInput.step = unit === 'lb' ? '1' : '0.1';
+            totalInput.step = unit === 'lb' ? '5' : '2.5';
+        }
+
+        function calculateDotsWilks() {
+            const unit = document.getElementById('dotsUnit').value;
+            const sex = document.getElementById('dotsSex').value;
+            const bwRaw = parseFloat(document.getElementById('dotsBw').value);
+            const totalRaw = parseFloat(document.getElementById('dotsTotal').value);
+            const dotsEl = document.getElementById('dots-score');
+            const wilksEl = document.getElementById('wilks-score');
+            const noteEl = document.getElementById('dots-note');
+            const unitLabel = unit.toUpperCase();
+
+            if (isNaN(bwRaw) || isNaN(totalRaw) || bwRaw <= 0 || totalRaw <= 0) {
+                dotsEl.innerText = '--';
+                wilksEl.innerText = '--';
+                noteEl.innerText = '';
+                return;
+            }
+
+            const bw = toKg(bwRaw, unit);
+            const total = toKg(totalRaw, unit);
+            const dots = total * dotsCoeff(bw, sex);
+            const wilks = total * wilksCoeff(bw, sex);
+
+            if (!isFinite(dots) || !isFinite(wilks)) {
+                dotsEl.innerText = '--';
+                wilksEl.innerText = '--';
+                noteEl.innerText = 'Poids corporel hors plage de calcul (40–210 kg homme, 40–150 kg femme).';
+                return;
+            }
+
+            dotsEl.innerText = dots.toFixed(2);
+            wilksEl.innerText = wilks.toFixed(2);
+            noteEl.innerText =
+                `Total ${totalRaw} ${unitLabel} à ${bwRaw} ${unitLabel} corporel · DOTS ${dots.toFixed(1)} · Wilks ${wilks.toFixed(1)}`;
+        }
+
+        const WARMUP_FIRST_PCT = 0.25;
+
+        function roundTo5(n) {
+            return Math.round(n / 5) * 5;
+        }
+
+        function roundDbPerHand(n) {
+            return Math.max(5, roundTo5(n));
+        }
+
+        function getApproachSteps(topReps) {
+            switch (topReps) {
+                case 1: return [{ r: 1, p: 0.85 }, { r: 1, p: 0.91 }, { r: 1, p: 0.95 }];
+                case 2: return [{ r: 1, p: 0.85 }, { r: 1, p: 0.95 }];
+                case 3: return [{ r: 1, p: 0.85 }, { r: 1, p: 0.95 }];
+                case 4: return [{ r: 2, p: 0.90 }];
+                case 5: return [{ r: 1, p: 0.90 }];
+                case 6: return [{ r: 3, p: 0.88 }];
+                case 7: return [{ r: 3, p: 0.85 }];
+                case 8: return [{ r: 4, p: 0.85 }];
+                case 9: return [{ r: 5, p: 0.85 }];
+                case 10: return [{ r: 5, p: 0.85 }];
+                default: return [{ r: 1, p: 0.90 }];
+            }
+        }
+
+        function getWarmupSteps(topReps) {
+            topReps = Math.max(1, Math.min(10, parseInt(topReps, 10) || 5));
+
+            const base = [
+                { r: 10, p: 'first' },
+                { r: 5, p: 0.35 },
+                { r: 4, p: 0.50 },
+                { r: 3, p: 0.65 },
+                { r: 2, p: 0.75 }
+            ];
+
+            const approach = getApproachSteps(topReps);
+            const all = [...base, ...approach, { r: topReps, p: 1.0, top: true }];
+
+            return all.map((step, index) => ({ ...step, s: index + 1 }));
+        }
+
+        function getWarmupFirstWeight(equipment, targetWeight) {
+            if (equipment === 'barbell') return 45;
+            if (equipment === 'dumbbells') return roundDbPerHand(targetWeight * WARMUP_FIRST_PCT);
+            return roundTo5(targetWeight * WARMUP_FIRST_PCT);
+        }
+
+        function calcWarmupStepWeight(step, targetWeight, equipment) {
+            if (step.p === 'first') return getWarmupFirstWeight(equipment, targetWeight);
+            if (equipment === 'dumbbells') return roundDbPerHand(targetWeight * step.p);
+            return roundTo5(targetWeight * step.p);
+        }
+
+        function enforceAscendingWarmup(weights, equipment, topWeight) {
+            const increment = 5;
+            const lastIndex = weights.length - 1;
+
+            if (equipment === 'barbell' && weights.length > 1 && weights[1] <= weights[0]) {
+                weights[1] = weights[0] + increment;
+            }
+
+            for (let i = 1; i < lastIndex; i++) {
+                if (weights[i] <= weights[i - 1]) {
+                    weights[i] = weights[i - 1] + increment;
+                }
+            }
+
+            for (let i = lastIndex - 1; i >= 0; i--) {
+                const maxAllowed = (i === lastIndex - 1) ? topWeight : weights[i + 1] - increment;
+                if (weights[i] > maxAllowed) weights[i] = maxAllowed;
+            }
+
+            weights[lastIndex] = equipment === 'dumbbells' ? roundDbPerHand(topWeight) : roundTo5(topWeight);
+        }
+
+        function updateWarmupEquipmentUi(equipment) {
+            const hintEl = document.getElementById('warmup-target-hint');
+            const headerEl = document.getElementById('warmup-charge-header');
+            if (!hintEl || !headerEl) return;
+
+            if (equipment === 'dumbbells') {
+                hintEl.textContent = 'Charge par haltère (poids d\'un seul DB au top set).';
+                headerEl.textContent = 'Charge (lb/haltère)';
+            } else if (equipment === 'machine') {
+                hintEl.textContent = 'Charge sur la pile (poids affiché sur la machine).';
+                headerEl.textContent = 'Charge (lb)';
+            } else {
+                hintEl.textContent = 'Charge totale sur la barre (barre olympique de 45 lb incluse).';
+                headerEl.textContent = 'Charge (lb)';
+            }
+        }
+
+        function calculateWarmup() {
+            let targetWeight = parseFloat(document.getElementById('targetWeight').value);
+            let topReps = parseInt(document.getElementById('topReps').value);
+            let equipment = document.getElementById('warmupEquipmentValue').value || 'barbell';
+            let tbody = document.getElementById('warmup-body');
+            tbody.innerHTML = "";
+
+            updateWarmupEquipmentUi(equipment);
+
+            if (isNaN(targetWeight) || targetWeight <= 0) return;
+
+            const steps = getWarmupSteps(topReps);
+            const weights = steps.map(step => calcWarmupStepWeight(step, targetWeight, equipment));
+            enforceAscendingWarmup(weights, equipment, targetWeight);
+
+            steps.forEach((step, index) => {
+                const weight = weights[index];
+                let pctText;
+                if (step.p === 'first') {
+                    pctText = equipment === 'barbell' ? 'Barre vide' : (WARMUP_FIRST_PCT * 100) + '%';
+                } else {
+                    pctText = (step.p * 100) + '%';
+                }
+                const isTop = step.top ? '<b>(Top set)</b>' : '';
+                const barNote = (equipment === 'barbell' && index === 0) ? ' <span style="font-size:0.85em;color:#666">(45 lb barre)</span>' : '';
+
+                tbody.innerHTML += `<tr>
+                    <td># ${step.s} ${isTop}</td>
+                    <td>${step.r}</td>
+                    <td>${pctText}</td>
+                    <td><b>${weight} lb</b>${barNote}</td>
+                </tr>`;
+            });
+        }
+
+        const lbPlates = [
+            { weight: 45, label: '45' },
+            { weight: 35, label: '35' },
+            { weight: 25, label: '25' },
+            { weight: 10, label: '10' },
+            { weight: 5, label: '5' },
+            { weight: 2.5, label: '2.5' }
+        ];
+
+        const kgPlates = [
+            { weight: 25, label: '25', color: '#E53935', name: 'Rouge', size: '' },
+            { weight: 20, label: '20', color: '#1E88E5', name: 'Bleu', size: '' },
+            { weight: 15, label: '15', color: '#FDD835', name: 'Jaune', size: '' },
+            { weight: 10, label: '10', color: '#43A047', name: 'Vert', size: '' },
+            { weight: 5, label: '5', color: '#FFFFFF', name: 'Blanc', size: '' },
+            { weight: 2.5, label: '2.5', color: '#E53935', name: 'Rouge (petit)', size: 'small' },
+            { weight: 1.25, label: '1.25', color: '#C0C0C0', name: 'Chrome', size: 'small' },
+            { weight: 0.5, label: '0.5', color: '#9E9E9E', name: 'Chrome (petit)', size: 'tiny' }
+        ];
+
+        function distributePlates(totalWeight, barWeight, plateSet) {
+            const perSide = (totalWeight - barWeight) / 2;
+            if (perSide < -0.001) {
+                return { error: 'La charge totale est inférieure au poids de la barre.' };
+            }
+            if (perSide < 0.001) {
+                return { perSide: [], remainder: 0, actualTotal: barWeight };
+            }
+
+            let remaining = Math.round(perSide * 100) / 100;
+            const perSidePlates = [];
+
+            for (const plate of plateSet) {
+                while (remaining >= plate.weight - 0.001) {
+                    perSidePlates.push(plate);
+                    remaining = Math.round((remaining - plate.weight) * 100) / 100;
+                }
+            }
+
+            const actualPerSide = perSidePlates.reduce((sum, p) => sum + p.weight, 0);
+            return {
+                perSide: perSidePlates,
+                remainder: remaining,
+                actualTotal: barWeight + actualPerSide * 2
+            };
+        }
+
+        function countPlates(plates) {
+            const counts = new Map();
+            plates.forEach(p => {
+                const key = p.label;
+                counts.set(key, (counts.get(key) || 0) + 1);
+            });
+            return counts;
+        }
+
+        const plateConfig = {
+            lb: {
+                unit: 'lb',
+                defaultTotal: 225,
+                step: 2.5,
+                bars: [
+                    { value: 45, label: '45 lb (Olympic)' },
+                    { value: 35, label: "35 lb (Women's)" },
+                    { value: 33, label: '33 lb' },
+                    { value: 15, label: '15 lb (Technique)' }
+                ],
+                plates: lbPlates,
+                subtitle: "Disposition par côté (de la barre vers l'extérieur) :",
+                tableHead: '<tr><th>Plate</th><th>Par côté</th><th>Total (2 côtés)</th></tr>'
+            },
+            kg: {
+                unit: 'kg',
+                defaultTotal: 100,
+                step: 0.5,
+                bars: [
+                    { value: 20, label: '20 kg (Homme)' },
+                    { value: 15, label: '15 kg (Femme)' },
+                    { value: 10, label: '10 kg (Technique)' }
+                ],
+                plates: kgPlates,
+                subtitle: 'Disposition par côté (couleurs IWF) :',
+                tableHead: '<tr><th>Plate</th><th>Couleur</th><th>Par côté</th><th>Total (2 côtés)</th></tr>'
+            }
+        };
+
+        function updatePlateUnit() {
+            const unit = document.getElementById('plateUnit').value;
+            const cfg = plateConfig[unit];
+            const totalInput = document.getElementById('plateTotal');
+            const barSelect = document.getElementById('plateBar');
+
+            document.getElementById('plateTotalLabel').innerText = `Charge totale sur la barre (${cfg.unit}) :`;
+            document.getElementById('plateBarLabel').innerText = `Poids de la barre (${cfg.unit}) :`;
+            document.getElementById('plate-subtitle').innerText = cfg.subtitle;
+            document.getElementById('plate-thead').innerHTML = cfg.tableHead;
+
+            totalInput.step = cfg.step;
+
+            barSelect.innerHTML = cfg.bars.map(b =>
+                `<option value="${b.value}">${b.label}</option>`
+            ).join('');
+        }
+
+        function renderPlates() {
+            const unit = document.getElementById('plateUnit').value;
+            const cfg = plateConfig[unit];
+            const total = parseFloat(document.getElementById('plateTotal').value);
+            const bar = parseFloat(document.getElementById('plateBar').value);
+            const resultEl = document.getElementById('plate-result');
+            const visualEl = document.getElementById('plate-visual');
+            const tbody = document.getElementById('plate-body');
+            const legendEl = document.getElementById('plate-legend');
+            const noteEl = document.getElementById('plate-note');
+
+            if (isNaN(total)) {
+                resultEl.innerText = 'Entrez une charge valide.';
+                visualEl.innerHTML = '';
+                tbody.innerHTML = '';
+                legendEl.innerHTML = '';
+                noteEl.innerText = '';
+                return;
+            }
+
+            const dist = distributePlates(total, bar, cfg.plates);
+
+            if (dist.error) {
+                resultEl.innerHTML = `<span class="plate-error">${dist.error}</span>`;
+                visualEl.innerHTML = '';
+                tbody.innerHTML = '';
+                legendEl.innerHTML = '';
+                noteEl.innerText = '';
+                return;
+            }
+
+            const counts = countPlates(dist.perSide);
+            let summary;
+
+            if (dist.perSide.length === 0) {
+                summary = 'Barre seule — aucune plate à ajouter.';
+            } else if (unit === 'lb') {
+                summary = [...counts.entries()].map(([label, qty]) => `${qty}× ${label} lb`).join(' + ') + ' par côté';
+            } else {
+                summary = [...counts.entries()].map(([label, qty]) => {
+                    const plate = kgPlates.find(p => p.label === label);
+                    return `${qty}× ${label} kg (${plate.name})`;
+                }).join(' + ') + ' par côté';
+            }
+
+            resultEl.innerText = `Par côté : ${summary}`;
+
+            if (unit === 'lb') {
+                visualEl.innerHTML = '<span class="bar-label">BAR</span>' +
+                    dist.perSide.map(p => `<span class="plate-badge lb">${p.label}</span>`).join('');
+            } else {
+                visualEl.innerHTML = '<span class="bar-label">BAR</span>' +
+                    dist.perSide.map(p => {
+                        const textColor = (p.color === '#FFFFFF' || p.color === '#FDD835') ? '#222' : '#fff';
+                        return `<span class="plate-badge kg ${p.size}" style="background:${p.color};color:${textColor}" title="${p.name}">${p.label}</span>`;
+                    }).join('');
+            }
+
+            tbody.innerHTML = '';
+            const usedPlates = new Set();
+
+            cfg.plates.forEach(p => {
+                const qty = counts.get(p.label) || 0;
+                if (qty > 0) {
+                    usedPlates.add(p.label);
+                    if (unit === 'lb') {
+                        tbody.innerHTML += `<tr><td><b>${p.label} lb</b></td><td>${qty}</td><td>${qty * 2}</td></tr>`;
+                    } else {
+                        const swatch = `<span class="legend-swatch" style="background:${p.color}"></span>`;
+                        tbody.innerHTML += `<tr><td><b>${p.label} kg</b></td><td>${swatch} ${p.name}</td><td>${qty}</td><td>${qty * 2}</td></tr>`;
+                    }
+                }
+            });
+
+            if (unit === 'kg') {
+                legendEl.innerHTML = kgPlates
+                    .filter(p => usedPlates.has(p.label))
+                    .map(p => `<span class="legend-item"><span class="legend-swatch" style="background:${p.color}"></span>${p.label} kg — ${p.name}</span>`)
+                    .join('');
+            } else {
+                legendEl.innerHTML = '';
+            }
+
+            const decimals = unit === 'kg' ? 2 : 1;
+            const unitLabel = cfg.unit;
+
+            if (dist.remainder > 0.001) {
+                const plateType = unit === 'kg' ? 'plates compétition' : 'ces plates';
+                noteEl.innerHTML = `<span class="plate-error">Impossible d'atteindre exactement ${total} ${unitLabel} avec ${plateType}. Poids réel : <b>${dist.actualTotal} ${unitLabel}</b> (écart de ${Math.abs(total - dist.actualTotal).toFixed(decimals)} ${unitLabel}).</span>`;
+            } else if (Math.abs(dist.actualTotal - total) > 0.001) {
+                noteEl.innerHTML = `Poids réel sur la barre : <b>${dist.actualTotal} ${unitLabel}</b>`;
+            } else {
+                const barNote = unit === 'kg' ? `barre ${bar} kg + plates IWF` : `barre ${bar} lb + plates`;
+                noteEl.innerText = `Poids confirmé : ${dist.actualTotal} ${unitLabel} (${barNote})`;
+            }
+        }
+
+        function recalculateAll() {
+            calculate1RM();
+            calculateTargetLoad();
+            calculateWarmup();
+            calculateDotsWilks();
+            renderPlates();
+        }
+
+        let appStarted = false;
+
+        function bootApp() {
+            if (appStarted) return;
+            appStarted = true;
+
+            try {
+                document.getElementById('plateUnit').addEventListener('change', () => {
+                    const cfg = plateConfig[document.getElementById('plateUnit').value];
+                    document.getElementById('plateTotal').value = cfg.defaultTotal;
+                    updatePlateUnit();
+                    recalculateAll();
+                });
+
+                document.getElementById('dotsUnit').addEventListener('change', () => {
+                    const previousUnit = document.getElementById('dotsUnit').dataset.currentUnit || 'kg';
+                    document.getElementById('dotsUnit').dataset.currentUnit = document.getElementById('dotsUnit').value;
+                    updateDotsUnit(previousUnit);
+                    calculateDotsWilks();
+                });
+
+                document.getElementById('use-estimated-rm').addEventListener('click', () => {
+                    if (lastEstimatedRm === null) calculate1RM();
+                    if (lastEstimatedRm !== null) {
+                        document.getElementById('targetRm').value = roundToHalf(lastEstimatedRm);
+                        calculateTargetLoad();
+                    }
+                });
+
+                document.querySelectorAll('.equip-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.equip-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        document.getElementById('warmupEquipmentValue').value = btn.dataset.equip;
+                        recalculateAll();
+                    });
+                });
+
+                bindAutoCalc();
+                updatePlateUnit();
+                document.getElementById('dotsUnit').dataset.currentUnit = 'kg';
+                updateDotsUnit();
+                recalculateAll();
+            } catch (err) {
+                console.error(err);
+                const banner = document.getElementById('boot-error');
+                if (banner) {
+                    banner.textContent = 'Erreur de chargement. Ouvrez ce fichier dans Safari (pas en aperçu).';
+                    banner.style.display = 'block';
+                }
+            }
+        }
+
+        function bindAutoCalc() {
+            document.querySelectorAll('input, select, button').forEach(el => {
+                if (el.id === 'use-estimated-rm') return;
+                el.addEventListener('input', recalculateAll);
+                el.addEventListener('change', recalculateAll);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', bootApp);
+        window.addEventListener('load', bootApp);
+        window.addEventListener('pageshow', bootApp);
+        setTimeout(bootApp, 0);
+    </script>
+</body>
+</html>
