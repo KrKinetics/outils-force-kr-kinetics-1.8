@@ -4,161 +4,32 @@
   <meta charset="utf-8">
   <meta name="format-detection" content="telephone=no">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151515">
   <meta name="description" content="Outils de force KR Kinetics : échauffement, estimation 1RM, charge cible, chargement de barre et scores de powerlifting.">
   <title>Outils de Force | KR Kinetics</title>
   <style>
-    :root { --accent:#c94843; --ink:#27272a; --muted:#67676f; --bg:#f4f4f7; --card:#fff; --line:#d9d9df; --warn:#9a6700; --error:#b42318; }
-    * { box-sizing:border-box; }
-    body { margin:0; padding:20px; max-width:820px; margin-inline:auto; font-family:Arial,Helvetica,sans-serif; color:var(--ink); background:var(--bg); }
-    header,.card { background:var(--card); border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-    header { padding:24px 20px; margin-bottom:20px; text-align:center; }
-    h1 { margin:0; font-size:2rem; letter-spacing:.02em; }
-    header p { margin:.4rem 0 0; color:var(--muted); }
-    .card { padding:20px; margin-bottom:20px; }
-    h2 { margin-top:0; font-size:1.35rem; }
-    label { display:block; margin-top:12px; font-weight:700; }
-    input,select,button { font:inherit; }
-    input,select { width:100%; min-height:42px; padding:8px 10px; margin-top:5px; border:1px solid var(--line); border-radius:6px; background:#fff; }
-    input:focus,select:focus,button:focus-visible { outline:3px solid rgba(201,72,67,.25); outline-offset:1px; }
-    button { min-height:42px; border:1px solid var(--line); border-radius:6px; padding:8px 12px; cursor:pointer; background:#f3f3f5; }
-    button:hover { background:#e8e8ec; }
-    .toggle { display:flex; margin-top:7px; border:1px solid var(--line); border-radius:7px; overflow:hidden; }
-    .toggle button { flex:1; border:0; border-radius:0; }
-    .toggle button + button { border-left:1px solid var(--line); }
-    .toggle button[aria-pressed="true"] { color:#fff; background:var(--accent); }
-    .grid-2,.grid-3,.score-grid { display:grid; gap:12px; }
-    .grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .grid-3,.score-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
-    .hint { color:var(--muted); font-size:.9rem; line-height:1.45; }
-    .result { margin-top:15px; font-size:1.15rem; font-weight:700; color:var(--accent); }
-    .message { margin-top:12px; padding:10px 12px; border-radius:6px; background:#f7f7f9; }
-    .message.error { color:var(--error); background:#fff1f0; }
-    .message.warn { color:var(--warn); background:#fff8e6; }
-    table { width:100%; border-collapse:collapse; margin-top:14px; }
-    th,td { border:1px solid var(--line); padding:8px; text-align:center; }
-    th { background:#f4f4f6; }
-    .score { padding:14px; border:1px solid var(--line); border-radius:8px; text-align:center; background:#fafafd; }
-    .score-label { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; }
-    .score-value { margin-top:5px; font-size:1.55rem; font-weight:800; color:var(--accent); }
-    .plate-side { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px; min-height:52px; margin:14px 0; }
-    .bar-label,.collar-label,.plate { display:inline-flex; align-items:center; justify-content:center; font-weight:700; border:1px solid rgba(0,0,0,.18); border-radius:4px; }
-    .bar-label { min-height:34px; padding:6px 10px; background:#777; color:#fff; }
-    .collar-label { min-height:38px; padding:5px 7px; background:#222; color:#fff; font-size:.75rem; }
-    .plate { min-width:40px; height:44px; padding:3px; }
-    .plate.small { min-width:32px; height:34px; font-size:.75rem; }
-    .plate.tiny { min-width:26px; height:28px; font-size:.68rem; }
-    .footer { padding:10px; text-align:center; color:var(--muted); font-size:.85rem; }
-    @media (max-width:650px) { .grid-2,.grid-3,.score-grid { grid-template-columns:1fr; } body { padding:12px; } .card { padding:16px; } table { font-size:.88rem; } }
+    :root{--kr-red:#d94f47;--kr-red-dark:#b93d37;--kr-black:#151515;--kr-charcoal:#252525;--kr-graphite:#3a3a3a;--kr-bg:#f3f3f1;--kr-card:#fff;--kr-line:#deded9;--kr-muted:#6d6d68;--kr-warning:#9a6700;--kr-error:#b42318;--radius:18px;--shadow:0 14px 34px rgba(21,21,21,.08)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#ececea 0,#f7f7f5 270px);color:var(--kr-black);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;line-height:1.45}button,input,select{font:inherit}
+    .shell{width:min(980px,calc(100% - 28px));margin:0 auto;padding:24px 0 56px}.brand-header{position:relative;overflow:hidden;background:var(--kr-black);border-radius:26px;padding:24px 26px 26px;color:#fff;box-shadow:0 18px 45px rgba(0,0,0,.18);margin-bottom:22px}.brand-header:after{content:"";position:absolute;right:-70px;top:-100px;width:260px;height:260px;border:48px solid rgba(217,79,71,.22);border-radius:50%;transform:rotate(-15deg)}.brand-row{position:relative;z-index:1;display:flex;align-items:center;gap:18px}.brand-logo{width:112px;height:112px;object-fit:cover;background:#fff;border-radius:16px;padding:7px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}.eyebrow{margin:0 0 4px;color:#f49b95;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.16em}h1{margin:0;font-size:clamp(2rem,6vw,3.7rem);letter-spacing:-.055em;line-height:.98}.brand-subtitle{max-width:620px;margin:12px 0 0;color:#d9d9d4;font-size:1.02rem}.brand-rule{position:relative;z-index:1;height:5px;width:92px;background:var(--kr-red);border-radius:99px;margin-top:20px}
+    .intro{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-bottom:18px}.intro-card{background:var(--kr-card);border:1px solid var(--kr-line);border-radius:var(--radius);padding:19px 21px;box-shadow:var(--shadow)}.intro-card strong{display:block;font-size:1.06rem;margin-bottom:5px}.intro-card p{margin:0;color:var(--kr-muted)}.app-grid{display:grid;gap:18px}.card{background:var(--kr-card);border:1px solid var(--kr-line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:15px;margin-bottom:16px;border-bottom:1px solid var(--kr-line)}.card-index{display:inline-grid;place-items:center;min-width:34px;height:34px;border-radius:10px;background:var(--kr-black);color:#fff;font-size:.8rem;font-weight:900}h2{margin:0;font-size:1.35rem;letter-spacing:-.025em}.card-head p{margin:5px 0 0;color:var(--kr-muted);font-size:.92rem}
+    .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field.full{grid-column:1/-1}label{display:block;margin-bottom:7px;font-size:.83rem;font-weight:800;text-transform:uppercase;letter-spacing:.045em;color:var(--kr-graphite)}input,select{width:100%;min-height:48px;border:1px solid #cfcfca;border-radius:11px;background:#fafaf8;color:var(--kr-black);padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}input:focus,select:focus{border-color:var(--kr-red);box-shadow:0 0 0 4px rgba(217,79,71,.13);background:#fff}.segmented{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #cfcfca;border-radius:12px;overflow:hidden;background:#eee}.segmented button{min-height:46px;border:0;border-right:1px solid #cfcfca;background:#f4f4f1;color:var(--kr-charcoal);font-weight:800;cursor:pointer;transition:.15s}.segmented button:last-child{border-right:0}.segmented button[aria-pressed="true"]{background:var(--kr-red);color:#fff}.segmented button:hover{filter:brightness(.97)}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:43px;border:0;border-radius:10px;padding:9px 14px;background:var(--kr-black);color:#fff;font-weight:800;cursor:pointer;transition:transform .15s,background .15s}.btn:hover{background:var(--kr-red-dark);transform:translateY(-1px)}.hint{margin:8px 0 0;color:var(--kr-muted);font-size:.88rem}.result{margin-top:16px;border-left:5px solid var(--kr-red);background:#f8efee;border-radius:10px;padding:14px 15px;font-size:1.08rem;font-weight:850;color:var(--kr-black)}.message{margin:13px 0 0;border-radius:10px;padding:10px 12px;background:#f1f1ed;color:var(--kr-muted);font-size:.9rem}.message[hidden]{display:none}.message.warn{background:#fff6db;color:var(--kr-warning)}.message.error{background:#fff0ee;color:var(--kr-error)}
+    .table-wrap{overflow:auto;margin-top:15px;border:1px solid var(--kr-line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:520px}th{background:var(--kr-black);color:#fff;text-align:left;font-size:.77rem;text-transform:uppercase;letter-spacing:.05em}th,td{padding:11px 12px;border-bottom:1px solid var(--kr-line)}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#faf6f5}.plate-visual{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-height:64px;margin:15px 0;padding:14px;background:#efefeb;border-radius:12px}.bar-label,.collar-label,.plate{display:inline-grid;place-items:center;font-weight:900;border-radius:6px;border:1px solid rgba(0,0,0,.18)}.bar-label{height:38px;padding:0 10px;background:var(--kr-graphite);color:#fff}.collar-label{height:42px;padding:0 8px;background:#8d8d88;color:#fff;font-size:.72rem}.plate{width:44px;height:54px;text-shadow:0 1px 1px rgba(0,0,0,.15)}.plate.small{width:34px;height:42px;font-size:.78rem}.plate.tiny{width:27px;height:34px;font-size:.68rem}.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.score{background:var(--kr-black);color:#fff;border-radius:14px;padding:16px;text-align:center}.score-label{display:block;color:#c9c9c4;font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.score-value{display:block;margin-top:5px;color:#fff;font-size:1.7rem;font-weight:900}.score:nth-child(1){box-shadow:inset 0 5px 0 var(--kr-red)}footer{text-align:center;color:var(--kr-muted);padding:28px 10px 0;font-size:.86rem}footer strong{color:var(--kr-black)}
+    @media(max-width:720px){.intro{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.score-grid{grid-template-columns:1fr}.brand-row{align-items:flex-start}.brand-logo{width:82px;height:82px}.brand-subtitle{font-size:.94rem}.card{padding:17px}.shell{width:min(100% - 18px,980px);padding-top:10px}.brand-header{border-radius:18px;padding:19px}}@media(max-width:460px){.brand-row{display:block}.brand-logo{margin-bottom:15px}.segmented{grid-template-columns:1fr}.segmented button{border-right:0;border-bottom:1px solid #cfcfca}.segmented button:last-child{border-bottom:0}}
   </style>
 </head>
 <body>
-  <header>
-    <h1>KR Kinetics</h1>
-    <p>Outils de Force · version 1.9 corrective</p>
-  </header>
-
-  <main>
-    <section class="card" aria-labelledby="warmup-title">
-      <h2 id="warmup-title">Montée en charge</h2>
-      <div class="grid-2">
-        <div>
-          <label for="targetWeight">Charge désirée du top set (lb)</label>
-          <input type="number" id="targetWeight" value="515" min="1" max="5000" step="1" inputmode="decimal">
-        </div>
-        <div>
-          <label for="topReps">Répétitions du top set</label>
-          <select id="topReps"></select>
-        </div>
-      </div>
-
-      <label>Équipement</label>
-      <div class="toggle" id="warmupEquipment" role="group" aria-label="Équipement de la montée en charge">
-        <button type="button" data-equip="barbell" aria-pressed="true">Barre</button>
-        <button type="button" data-equip="dumbbells" aria-pressed="false">Haltères</button>
-        <button type="button" data-equip="machine" aria-pressed="false">Machine</button>
-      </div>
-
-      <div class="grid-2">
-        <div id="warmupBarWrap">
-          <label for="warmupBar">Poids de la barre (lb)</label>
-          <select id="warmupBar">
-            <option value="45">45 lb</option><option value="35">35 lb</option><option value="33">33 lb</option>
-            <option value="20" selected>20 lb</option><option value="15">15 lb</option><option value="10">10 lb</option>
-          </select>
-        </div>
-        <div>
-          <label for="warmupIncrement">Plus petit incrément réalisable (lb)</label>
-          <input type="number" id="warmupIncrement" value="5" min="0.5" max="100" step="0.5">
-        </div>
-      </div>
-      <p class="hint" id="warmupHint">La charge de la barre est incluse. Les étapes impossibles ou redondantes sont retirées automatiquement.</p>
-      <div id="warmupMessage" class="message" hidden aria-live="polite"></div>
-      <table>
-        <thead><tr><th>Série</th><th>Reps</th><th>Repère</th><th>Charge</th></tr></thead>
-        <tbody id="warmupBody"></tbody>
-      </table>
-    </section>
-
-    <section class="card" aria-labelledby="rm-title">
-      <h2 id="rm-title">1RM estimé</h2>
-      <div class="grid-3">
-        <div><label for="charge">Charge (lb)</label><input type="number" id="charge" value="315" min="0.5" max="5000" step="0.5"></div>
-        <div><label for="reps">Répétitions</label><select id="reps"></select></div>
-        <div><label for="rpe">RPE</label><select id="rpe"></select></div>
-      </div>
-      <div class="result" id="rmResult" aria-live="polite">1RM estimé : --</div>
-    </section>
-
-    <section class="card" aria-labelledby="target-title">
-      <h2 id="target-title">Charge cible à partir du RPE</h2>
-      <div class="grid-3">
-        <div><label for="targetRm">1RM de référence (lb)</label><input type="number" id="targetRm" value="400" min="0.5" max="5000" step="0.5"></div>
-        <div><label for="targetReps">Répétitions visées</label><select id="targetReps"></select></div>
-        <div><label for="targetRpe">RPE visé</label><select id="targetRpe"></select></div>
-      </div>
-      <div class="grid-2">
-        <div><label for="targetIncrement">Incrément disponible (lb)</label><input type="number" id="targetIncrement" value="5" min="0.5" max="100" step="0.5"></div>
-        <div style="align-self:end"><button type="button" id="useEstimatedRm">Utiliser le 1RM estimé</button></div>
-      </div>
-      <div class="result" id="targetLoadResult" aria-live="polite">Charge cible : --</div>
-    </section>
-
-    <section class="card" aria-labelledby="plates-title">
-      <h2 id="plates-title">Calculateur de disques</h2>
-      <div class="grid-3">
-        <div><label for="plateMode">Configuration</label><select id="plateMode"><option value="lb">Gym — lb</option><option value="kgGym">Gym — kg</option><option value="iwf">Compétition IWF — kg</option></select></div>
-        <div><label for="plateTotal">Charge totale</label><input type="number" id="plateTotal" value="225" min="1" max="5000" step="0.5"></div>
-        <div><label for="plateBar">Barre</label><select id="plateBar"></select></div>
-      </div>
-      <p class="hint" id="plateHint"></p>
-      <div class="result" id="plateResult" aria-live="polite">--</div>
-      <div class="plate-side" id="plateVisual" aria-label="Disposition des disques"></div>
-      <table><thead><tr><th>Disque</th><th>Par côté</th><th>Total</th></tr></thead><tbody id="plateBody"></tbody></table>
-      <div class="message" id="plateMessage" hidden aria-live="polite"></div>
-    </section>
-
-    <section class="card" aria-labelledby="scores-title">
-      <h2 id="scores-title">DOTS, Wilks original et IPF GL</h2>
-      <p class="hint">Les scores utilisent un total SBD. DOTS et Wilks appliquent leurs limites de poids officielles; tout ajustement est affiché.</p>
-      <div class="grid-3">
-        <div><label for="scoreUnit">Unité</label><select id="scoreUnit"><option value="kg">kg</option><option value="lb">lb</option></select></div>
-        <div><label for="scoreSex">Sexe</label><select id="scoreSex"><option value="m">Homme</option><option value="f">Femme</option></select></div>
-        <div><label for="scoreEquipment">IPF GL</label><select id="scoreEquipment"><option value="classic">Powerlifting classique</option><option value="equipped">Powerlifting équipé</option></select></div>
-      </div>
-      <div class="grid-2">
-        <div><label for="scoreBw">Poids corporel</label><input type="number" id="scoreBw" value="100" min="1" max="1000" step="0.01"></div>
-        <div><label for="scoreTotal">Total SBD</label><input type="number" id="scoreTotal" value="500" min="1" max="10000" step="0.5"></div>
-      </div>
-      <div class="score-grid" style="margin-top:14px">
-        <div class="score"><div class="score-label">DOTS</div><div class="score-value" id="dotsScore">--</div></div>
-        <div class="score"><div class="score-label">Wilks original</div><div class="score-value" id="wilksScore">--</div></div>
-        <div class="score"><div class="score-label">IPF GL Points</div><div class="score-value" id="ipfGlScore">--</div></div>
-      </div>
-      <div id="scoreMessage" class="message" hidden aria-live="polite"></div>
-    </section>
+  <main class="shell">
+    <header class="brand-header"><div class="brand-row"><img class="brand-logo" src="https://avatars.githubusercontent.com/u/295870852?v=4" alt="Logo KR Kinetics"><div><p class="eyebrow">KR Kinetics · Performance</p><h1>Outils de force</h1><p class="brand-subtitle">Planifier les charges, structurer la montée en charge et comparer les performances avec des outils conçus pour le terrain.</p></div></div><div class="brand-rule"></div></header>
+    <section class="intro" aria-label="Présentation"><div class="intro-card"><strong>Simple à utiliser.</strong><p>Des résultats immédiatement exploitables pendant une séance ou lors de la planification.</p></div><div class="intro-card"><strong>Conçu par KR Kinetics.</strong><p>Les résultats demeurent des estimations à adapter au contexte et à l’athlète.</p></div></section>
+    <div class="app-grid">
+      <section class="card"><div class="card-head"><div><h2>Montée en charge</h2><p>Construire un échauffement progressif selon l’équipement disponible.</p></div><span class="card-index">01</span></div><div class="fields"><div class="field full"><label>Équipement</label><div class="segmented" id="warmupEquipment"><button type="button" data-equip="barbell" aria-pressed="true">Barre</button><button type="button" data-equip="dumbbells" aria-pressed="false">Haltères</button><button type="button" data-equip="machine" aria-pressed="false">Machine</button></div></div><div class="field"><label for="targetWeight">Charge cible</label><input id="targetWeight" type="number" value="315" min="1" max="5000" step="1"></div><div class="field"><label for="topReps">Répétitions du top set</label><select id="topReps"></select></div><div class="field" id="warmupBarWrap"><label for="warmupBar">Poids de la barre</label><select id="warmupBar"><option value="10">10 lb</option><option value="15">15 lb</option><option value="20">20 lb</option><option value="33">33 lb</option><option value="35">35 lb</option><option value="45" selected>45 lb</option></select></div><div class="field"><label for="warmupIncrement">Plus petit incrément</label><select id="warmupIncrement"><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div></div><p class="hint" id="warmupHint"></p><div id="warmupMessage" class="message" hidden aria-live="polite"></div><div class="table-wrap"><table><thead><tr><th>Série</th><th>Reps</th><th>Étape</th><th>Charge</th></tr></thead><tbody id="warmupBody"></tbody></table></div></section>
+      <section class="card"><div class="card-head"><div><h2>1RM estimé</h2><p>Estimer une répétition maximale à partir d’une série et du RPE.</p></div><span class="card-index">02</span></div><div class="fields"><div class="field"><label for="charge">Charge</label><input id="charge" type="number" value="315" min="1" max="5000"></div><div class="field"><label for="reps">Répétitions</label><select id="reps"></select></div><div class="field"><label for="rpe">RPE</label><select id="rpe"></select></div></div><div class="result" id="rmResult" aria-live="polite">1RM estimé : --</div></section>
+      <section class="card"><div class="card-head"><div><h2>Charge cible</h2><p>Convertir un 1RM de référence en charge adaptée aux répétitions et au RPE visés.</p></div><span class="card-index">03</span></div><div class="fields"><div class="field"><label for="targetRm">1RM de référence</label><input id="targetRm" type="number" value="400" min="1" max="5000"></div><div class="field"><label for="targetReps">Répétitions visées</label><select id="targetReps"></select></div><div class="field"><label for="targetRpe">RPE visé</label><select id="targetRpe"></select></div><div class="field"><label for="targetIncrement">Incrément disponible</label><select id="targetIncrement"><option value="0.5">0,5 lb</option><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div><div class="field full"><button class="btn" id="useEstimatedRm" type="button">Utiliser le 1RM estimé</button></div></div><div class="result" id="targetLoadResult" aria-live="polite">Charge cible : --</div></section>
+      <section class="card"><div class="card-head"><div><h2>Chargement de barre</h2><p>Trouver la combinaison exacte de disques selon le mode et la barre.</p></div><span class="card-index">04</span></div><div class="fields"><div class="field"><label for="plateMode">Configuration</label><select id="plateMode"><option value="lb">Gym — lb</option><option value="kgGym">Gym — kg</option><option value="iwf">Compétition IWF</option></select></div><div class="field"><label for="plateBar">Barre</label><select id="plateBar"></select></div><div class="field"><label for="plateTotal">Charge totale</label><input id="plateTotal" type="number" value="225" min="1" max="5000"></div></div><p class="hint" id="plateHint"></p><div class="result" id="plateResult">--</div><div class="plate-visual" id="plateVisual" aria-label="Disposition des disques"></div><div id="plateMessage" class="message" hidden aria-live="polite"></div><div class="table-wrap"><table><thead><tr><th>Disque</th><th>Par côté</th><th>Total</th></tr></thead><tbody id="plateBody"></tbody></table></div></section>
+      <section class="card"><div class="card-head"><div><h2>Scores de powerlifting</h2><p>Comparer un total selon DOTS, Wilks original et IPF GL Points.</p></div><span class="card-index">05</span></div><div class="fields"><div class="field"><label for="scoreUnit">Unité</label><select id="scoreUnit"><option value="kg">Kilogrammes</option><option value="lb">Livres</option></select></div><div class="field"><label for="scoreSex">Sexe</label><select id="scoreSex"><option value="m">Homme</option><option value="f">Femme</option></select></div><div class="field"><label for="scoreEquipment">Catégorie IPF</label><select id="scoreEquipment"><option value="classic">Classique</option><option value="equipped">Équipé</option></select></div><div class="field"><label for="scoreBw">Poids corporel</label><input id="scoreBw" type="number" value="100" min="1" max="1000" step="0.1"></div><div class="field"><label for="scoreTotal">Total SBD</label><input id="scoreTotal" type="number" value="500" min="1" max="10000" step="0.5"></div></div><div class="score-grid"><div class="score"><span class="score-label">DOTS</span><span class="score-value" id="dotsScore">--</span></div><div class="score"><span class="score-label">Wilks original</span><span class="score-value" id="wilksScore">--</span></div><div class="score"><span class="score-label">IPF GL</span><span class="score-value" id="ipfGlScore">--</span></div></div><div id="scoreMessage" class="message" hidden aria-live="polite"></div></section>
+    </div>
+    <footer><strong>KR Kinetics</strong> · Outils de force · Créé par Kev Roots</footer>
   </main>
-
-  <div class="footer">KR Kinetics · Outil de planification — les résultats demeurent des estimations</div>
   <script src="app.js"></script>
 </body>
 </html>
