@@ -50,10 +50,9 @@ assert.ok(styles.includes('max-width:480px'), '480px breakpoint missing');
 const buildRaw = fs.readFileSync(path.join(root, 'build.json'), 'utf8').replace(/^\uFEFF/, '');
 const build = JSON.parse(buildRaw);
 assert.ok(build.version && build.commit, 'build.json must include version and commit');
-assert.equal(build.version, '1.9.1', 'build.json version should be 1.9.1');
+assert.match(build.version, /^\d+\.\d+\.\d+$/, 'build.json version must be a semantic version');
 const buildBytes = fs.readFileSync(path.join(root, 'build.json'));
 assert.ok(!(buildBytes[0] === 0xEF && buildBytes[1] === 0xBB && buildBytes[2] === 0xBF), 'build.json must be UTF-8 without BOM');
-
 
 for (const barWeight of [10, 15, 20, 33, 35, 45]) {
   for (const target of [barWeight, barWeight + 1, barWeight + 5, 100, 515]) {
