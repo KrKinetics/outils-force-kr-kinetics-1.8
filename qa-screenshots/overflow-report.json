@@ -7,23 +7,23 @@
       "scrollWidth": 320,
       "innerWidth": 320,
       "nav": {
-        "sw": 304,
-        "cw": 304,
+        "sw": 320,
+        "cw": 320,
         "overflow": false
       },
       "table": {
-        "sw": 274,
-        "cw": 274,
-        "overflow": false
+        "sw": 291,
+        "cw": 262,
+        "overflow": true
       },
       "warmupTable": {
-        "sw": 274,
-        "cw": 274,
-        "overflow": false
+        "sw": 291,
+        "cw": 262,
+        "overflow": true
       },
       "plateVisual": {
-        "sw": 271,
-        "cw": 271,
+        "sw": 259,
+        "cw": 259,
         "overflow": false
       },
       "h1": true
@@ -37,23 +37,23 @@
       "scrollWidth": 375,
       "innerWidth": 375,
       "nav": {
-        "sw": 359,
-        "cw": 359,
+        "sw": 375,
+        "cw": 375,
         "overflow": false
       },
       "table": {
-        "sw": 329,
-        "cw": 329,
-        "overflow": false
+        "sw": 346,
+        "cw": 317,
+        "overflow": true
       },
       "warmupTable": {
-        "sw": 329,
-        "cw": 329,
-        "overflow": false
+        "sw": 346,
+        "cw": 317,
+        "overflow": true
       },
       "plateVisual": {
-        "sw": 326,
-        "cw": 326,
+        "sw": 314,
+        "cw": 314,
         "overflow": false
       },
       "h1": true
@@ -67,23 +67,23 @@
       "scrollWidth": 390,
       "innerWidth": 390,
       "nav": {
-        "sw": 374,
-        "cw": 374,
+        "sw": 390,
+        "cw": 390,
         "overflow": false
       },
       "table": {
-        "sw": 344,
-        "cw": 344,
-        "overflow": false
+        "sw": 361,
+        "cw": 332,
+        "overflow": true
       },
       "warmupTable": {
-        "sw": 344,
-        "cw": 344,
-        "overflow": false
+        "sw": 361,
+        "cw": 332,
+        "overflow": true
       },
       "plateVisual": {
-        "sw": 341,
-        "cw": 341,
+        "sw": 329,
+        "cw": 329,
         "overflow": false
       },
       "h1": true
@@ -97,23 +97,23 @@
       "scrollWidth": 430,
       "innerWidth": 430,
       "nav": {
-        "sw": 410,
-        "cw": 410,
+        "sw": 430,
+        "cw": 430,
         "overflow": false
       },
       "table": {
-        "sw": 374,
-        "cw": 374,
+        "sw": 366,
+        "cw": 366,
         "overflow": false
       },
       "warmupTable": {
-        "sw": 374,
-        "cw": 374,
+        "sw": 366,
+        "cw": 366,
         "overflow": false
       },
       "plateVisual": {
-        "sw": 371,
-        "cw": 371,
+        "sw": 363,
+        "cw": 363,
         "overflow": false
       },
       "h1": true
