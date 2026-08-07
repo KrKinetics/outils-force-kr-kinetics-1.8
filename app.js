@@ -66,22 +66,120 @@
     return { value: l / intensity, intensity };
   }
 
+  const RPE_ORDER = ['6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10'];
+  const RPE_LABELS = {
+    '10': '10 — aucune rep restante',
+    '9.5': '9,5 — entre 0 et 1 rep restante',
+    '9': '9 — environ 1 rep restante',
+    '8.5': '8,5 — entre 1 et 2 reps restantes',
+    '8': '8 — environ 2 reps restantes',
+    '7.5': '7,5 — entre 2 et 3 reps restantes',
+    '7': '7 — environ 3 reps restantes',
+    '6.5': '6,5 — environ 4 reps restantes'
+  };
+  const ROUNDING_WARN_RATIO = 0.12;
+
+  function shiftRpe(rpe, delta) {
+    const i = RPE_ORDER.indexOf(String(rpe));
+    if (i < 0) return null;
+    return RPE_ORDER[Math.max(0, Math.min(RPE_ORDER.length - 1, i + delta))];
+  }
+
   function targetLoad(oneRm, reps, rpe, increment) {
     const rm = finiteNumber(oneRm, .01, MAX_LOAD);
     const inc = finiteNumber(increment, .01, 100);
     const r = Number(reps);
     const intensity = RPE_TABLE[String(rpe)]?.[r - 1];
-    if (rm === null || inc === null || !Number.isInteger(r) || !intensity) return null;
-    return { theoretical: rm * intensity, load: roundToIncrement(rm * intensity, inc), intensity };
+    if (rm === null || inc === null || !Number.isInteger(r) || r < 1 || r > 12 || !intensity) return null;
+    const theoretical = rm * intensity;
+    if (!(theoretical > 0) || !Number.isFinite(theoretical)) return null;
+
+    let load = roundToIncrement(theoretical, inc);
+    let incrementTooCoarse = false;
+    if (load === null || !(load > 0) || !Number.isFinite(load)) {
+      load = inc;
+      incrementTooCoarse = true;
+    }
+
+    const relativeRoundingError = Math.abs(load - theoretical) / theoretical;
+    const significantRounding = incrementTooCoarse || relativeRoundingError >= ROUNDING_WARN_RATIO;
+
+    return {
+      theoretical,
+      load,
+      intensity,
+      relativeRoundingError,
+      significantRounding,
+      incrementTooCoarse
+    };
   }
 
-  function approachSteps(topReps) {
+  function suggestNextLoad(executedLoad, reps, prescribedRpe, feel, increment) {
+    const load = finiteNumber(executedLoad, .01, MAX_LOAD);
+    const inc = finiteNumber(increment, .01, 100);
+    const r = Number(reps);
+    if (load === null || inc === null || !Number.isInteger(r) || r < 1 || r > 12) return null;
+    if (!['easier', 'same', 'harder'].includes(feel)) return null;
+
+    if (feel === 'same') {
+      const kept = Math.max(inc, roundToIncrement(load, inc) || load);
+      if (!(kept > 0) || !Number.isFinite(kept)) return null;
+      return { load: kept, previous: load, delta: kept - load, warning: null, feel };
+    }
+
+    const feltDelta = feel === 'easier' ? -1 : 1;
+    const feltRpe = shiftRpe(prescribedRpe, feltDelta);
+    let suggested = null;
+
+    if (feltRpe && feltRpe !== String(prescribedRpe)) {
+      const est = estimate1RM(load, r, feltRpe);
+      if (est) {
+        const next = targetLoad(est.value, r, prescribedRpe, inc);
+        if (next && next.load > 0) suggested = next.load;
+      }
+    }
+
+    if (suggested === null) {
+      const nudged = feel === 'easier' ? load + inc : load - inc;
+      suggested = Math.max(inc, roundToIncrement(nudged, inc) || inc);
+    }
+
+    if (!(suggested > 0) || !Number.isFinite(suggested)) return null;
+
+    const maxStep = Math.max(load * 0.1, inc * 2);
+    let warning = null;
+    if (Math.abs(suggested - load) > maxStep + 1e-9) {
+      suggested = feel === 'easier'
+        ? Math.max(inc, roundToIncrement(load + maxStep, inc) || (load + inc))
+        : Math.max(inc, roundToIncrement(load - maxStep, inc) || Math.max(inc, load - inc));
+      warning = 'L’écart est important. Vérifie ton RPE et ta charge avant d’ajuster.';
+    } else if (Math.abs(suggested - load) / load > 0.1) {
+      warning = 'L’écart est important. Vérifie ton RPE et ta charge avant d’ajuster.';
+    }
+
+    if (!(suggested > 0) || !Number.isFinite(suggested)) return null;
+    return { load: suggested, previous: load, delta: suggested - load, warning, feel };
+  }
+
+  function warmupBaseSteps(topReps, compact) {
+    const reps = Number(topReps);
+    if (compact) {
+      if (reps <= 3) return [{r:5,p:null},{r:3,p:.50},{r:1,p:.75}];
+      return [{r:8,p:null},{r:5,p:.45},{r:3,p:.70}];
+    }
+    if (reps <= 3) {
+      return [{r:8,p:null},{r:5,p:.35},{r:3,p:.55},{r:2,p:.70},{r:1,p:.80}];
+    }
+    return [{r:10,p:null},{r:6,p:.40},{r:4,p:.55},{r:3,p:.70},{r:2,p:.80}];
+  }
+
+  function approachSteps(topReps, compact) {
+    if (compact) return [];
     switch (Number(topReps)) {
       case 1: return [{r:1,p:.85},{r:1,p:.91},{r:1,p:.95}];
       case 2: case 3: return [{r:1,p:.85},{r:1,p:.95}];
-      case 4: return [{r:2,p:.90}];
-      case 5: return [{r:1,p:.90}];
-      case 6: return [{r:3,p:.88}];
+      case 4: return [{r:2,p:.88}];
+      case 5: case 6: return [{r:2,p:.88}];
       case 7: return [{r:3,p:.85}];
       case 8: return [{r:4,p:.85}];
       case 9: case 10: return [{r:5,p:.85}];
@@ -94,6 +192,7 @@
     const reps = Number(options.topReps);
     const increment = finiteNumber(options.increment, .01, 100);
     const equipment = options.equipment;
+    const compact = !!options.compact;
     const minimum = equipment === 'barbell'
       ? finiteNumber(options.barWeight, 1, 100)
       : finiteNumber(options.minimum ?? 5, .01, 500);
@@ -108,7 +207,7 @@
     const roundedTop = roundToIncrement(target, increment);
     const topWeight = equipment === 'barbell' ? Math.max(minimum, roundedTop) : roundedTop;
     if (topWeight < minimum) {
-      return { error:'La charge réalisable est sous la charge minimale de l’équipement.', requested: target, achievable: topWeight };
+      return { error:'La charge suggérée est sous la charge minimale de l’équipement.', requested: target, achievable: topWeight };
     }
 
     if (Math.abs(topWeight - minimum) < 1e-9) {
@@ -118,12 +217,12 @@
           ? 'Aucune montée de charge n’est possible : le top set correspond à la barre sélectionnée.'
           : 'Aucune montée de charge distincte n’est nécessaire à cette charge.',
         requested: target,
-        achievable: topWeight
+        achievable: topWeight,
+        compact
       };
     }
 
-    const base = [{r:10,p:null},{r:5,p:.35},{r:4,p:.50},{r:3,p:.65},{r:2,p:.75}];
-    const candidates = [...base, ...approachSteps(reps)];
+    const candidates = [...warmupBaseSteps(reps, compact), ...approachSteps(reps, compact)];
     const rows = [];
 
     for (const step of candidates) {
@@ -135,11 +234,15 @@
     }
 
     rows.push({reps, weight:topWeight, label:'Top set', top:true});
+    const notes = [];
+    if (rows.length <= 2) notes.push('Le nombre d’étapes a été réduit parce que la charge cible est proche de la charge minimale.');
+    if (compact) notes.push('Version courte : moins d’étapes avant le top set.');
     return {
       rows,
-      note: rows.length <= 2 ? 'Le nombre d’étapes a été réduit parce que la charge cible est proche de la charge minimale.' : '',
+      note: notes.join(' '),
       requested: target,
-      achievable: topWeight
+      achievable: topWeight,
+      compact
     };
   }
 
@@ -204,21 +307,38 @@
     const scale = 4;
     const rawUnits = requestedPerSide * scale;
     const maxUnits = Math.floor(rawUnits + 1e-9);
-    const dp = buildPlateDp(maxUnits, config.plates);
+    const searchCeiling = maxUnits + Math.round(50 * scale);
+    const dp = buildPlateDp(searchCeiling, config.plates);
     const targetIsDiscrete = Math.abs(rawUnits - Math.round(rawUnits)) <= 1e-8;
     const targetUnits = Math.round(rawUnits);
 
     if (targetIsDiscrete) {
       const exact = dp.reconstruct(targetUnits);
-      if (exact) return {plates:exact, exact:true, actualTotal:t, collarsTotal};
+      if (exact) return {plates:exact, exact:true, actualTotal:t, requestedTotal:t, collarsTotal};
     }
 
+    let below = null;
     for (let units = maxUnits; units >= 0; units--) {
       const candidate = dp.reconstruct(units);
       if (candidate) {
         const actualTotal = b + collarsTotal + (units / scale) * 2;
-        return {plates:candidate, exact:false, actualTotal, difference:t - actualTotal, collarsTotal};
+        below = {plates:candidate, exact:false, actualTotal, difference:t - actualTotal, collarsTotal, requestedTotal:t};
+        break;
       }
+    }
+
+    let nearestAbove = null;
+    for (let units = maxUnits + 1; units <= searchCeiling; units++) {
+      const candidate = dp.reconstruct(units);
+      if (candidate) {
+        nearestAbove = b + collarsTotal + (units / scale) * 2;
+        break;
+      }
+    }
+
+    if (below) {
+      below.nearestAbove = nearestAbove;
+      return below;
     }
     return {error:'Aucune combinaison de disques n’a été trouvée.'};
   }
@@ -275,7 +395,7 @@
     };
   }
 
-  const API = {LB_TO_KG,RPE_TABLE,PLATE_CONFIGS,finiteNumber,roundToIncrement,estimate1RM,targetLoad,buildWarmupPlan,solveExactPlates,distributePlates,dotsCoefficient,wilksCoefficient,ipfGlCoefficient,calculateScores};
+  const API = {LB_TO_KG,RPE_TABLE,RPE_LABELS,RPE_ORDER,PLATE_CONFIGS,finiteNumber,roundToIncrement,estimate1RM,targetLoad,suggestNextLoad,buildWarmupPlan,solveExactPlates,distributePlates,dotsCoefficient,wilksCoefficient,ipfGlCoefficient,calculateScores};
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.KRForce = API;
 
@@ -307,14 +427,16 @@
   };
 
   let equipment = DEFAULTS.equipment;
+  let warmupCompact = false;
   let lastEstimatedRm = null;
+  let lastTargetOut = null;
   let scoreCanonical = {bwKg:DEFAULTS.scoreBwKg,totalKg:DEFAULTS.scoreTotalKg,unit:DEFAULTS.scoreUnit};
-  let saveTimer = null;
   let lastWarmupCopy = '';
   let lastRmCopy = '';
   let lastTargetCopy = '';
   let lastPlatesCopy = '';
   let lastScoresCopy = '';
+  let saveTimer = null;
 
   function setMessage(el, text, type) {
     el.hidden = !text;
@@ -337,8 +459,21 @@
     select.innerHTML = values.map(v => `<option value="${v}"${String(v)===String(selected)?' selected':''}>${v}</option>`).join('');
   }
 
+  function fillRpeSelect(select, selected) {
+    select.innerHTML = RPE_ORDER.slice().reverse().map(v =>
+      `<option value="${v}"${String(v)===String(selected)?' selected':''}>${RPE_LABELS[v] || v}</option>`
+    ).join('');
+  }
+
   function formatWeight(value) {
     return Number.isFinite(value) ? value.toFixed(value % 1 ? 1 : 0) : '--';
+  }
+
+  function updateWarmupCompactControl() {
+    const btn = $('warmupCompactToggle');
+    if (!btn) return;
+    btn.textContent = warmupCompact ? 'Revenir à la version standard' : 'Réduire le nombre d’étapes';
+    btn.setAttribute('aria-pressed', String(warmupCompact));
   }
 
   function setEquipment(next) {
@@ -413,6 +548,7 @@
 
   function renderWarmup() {
     $('warmupBarWrap').hidden = equipment !== 'barbell';
+    updateWarmupCompactControl();
     $('warmupHint').textContent = equipment === 'barbell'
       ? 'La charge de la barre est incluse. Les étapes impossibles ou redondantes sont retirées automatiquement.'
       : equipment === 'dumbbells'
@@ -420,7 +556,7 @@
         : 'La charge indiquée correspond à la pile ou à la résistance affichée.';
     const plan = buildWarmupPlan({
       target:$('targetWeight').value, topReps:$('topReps').value, increment:$('warmupIncrement').value,
-      equipment, barWeight:$('warmupBar').value, minimum:5
+      equipment, barWeight:$('warmupBar').value, minimum:5, compact:warmupCompact
     });
     $('warmupBody').innerHTML = '';
     lastWarmupCopy = '';
@@ -434,10 +570,20 @@
     const notes = [];
     if (plan.note) notes.push(plan.note);
     if (plan.requested != null && plan.achievable != null && Math.abs(plan.requested - plan.achievable) > 1e-9) {
-      notes.push(`Cible demandée : ${formatWeight(plan.requested)} lb · Charge réalisable : ${formatWeight(plan.achievable)} lb`);
+      notes.push(`Cible demandée : ${formatWeight(plan.requested)} lb · Charge suggérée : ${formatWeight(plan.achievable)} lb`);
     }
     setMessage($('warmupMessage'), notes.join(' '), notes.length ? 'warn' : '');
-    $('warmupBody').innerHTML = plan.rows.map((r,i) => `<tr><td>${i+1}${r.top?' — top set':''}</td><td>${r.reps}</td><td>${r.label}</td><td><strong>${formatWeight(r.weight)} lb</strong></td></tr>`).join('');
+    $('warmupBody').innerHTML = plan.rows.map((r,i) => {
+      const series = `${i+1}${r.top?' — top set':''}`;
+      const reps = `${r.reps} reps`;
+      const load = `${formatWeight(r.weight)} lb`;
+      return `<tr class="${r.top ? 'is-top' : ''}">` +
+        `<td data-label="Série">${series}</td>` +
+        `<td data-label="Reps">${reps}</td>` +
+        `<td data-label="Étape">${r.label}</td>` +
+        `<td data-label="Charge"><strong>${load}</strong></td>` +
+        `</tr>`;
+    }).join('');
     lastWarmupCopy = plan.rows.map((r,i) => `${i+1}. ${r.reps} reps · ${r.label} · ${formatWeight(r.weight)} lb`).join('\n');
   }
 
@@ -451,27 +597,77 @@
     }
     lastEstimatedRm = out.value;
     const rounded = Math.round(out.value);
-    const intensity = `${(out.intensity * 100).toFixed(1)} %`;
+    const pct = `${(out.intensity * 100).toFixed(1)}`;
     $('rmResult').innerHTML =
       `<span class="result-primary">≈ ${rounded} lb</span>` +
-      `<span class="result-secondary">Intensité : ${intensity}</span>`;
-    lastRmCopy = `1RM estimé ≈ ${rounded} lb · intensité ${intensity}`;
+      `<span class="result-secondary">Environ ${pct} % du 1RM</span>` +
+      `<span class="result-note">Une estimation varie selon le mouvement, l’expérience et le RPE déclaré.</span>`;
+    lastRmCopy = `1RM estimé ≈ ${rounded} lb · environ ${pct} % du 1RM`;
+  }
+
+  function renderAfterSetResult(suggestion) {
+    const el = $('afterSetResult');
+    if (!el) return;
+    if (!suggestion) {
+      el.hidden = true;
+      el.innerHTML = '';
+      return;
+    }
+    const feelText = suggestion.feel === 'easier'
+      ? 'La série était plus facile que prévu.'
+      : suggestion.feel === 'harder'
+        ? 'La série était plus difficile que prévu.'
+        : 'La série était comme prévu.';
+    const deltaTxt = suggestion.delta === 0
+      ? 'Même charge'
+      : `${suggestion.delta > 0 ? '+' : ''}${formatWeight(suggestion.delta)} lb`;
+    el.hidden = false;
+    el.innerHTML =
+      `<span class="result-secondary">${feelText}</span>` +
+      `<span class="result-primary">Pour la prochaine série : ${formatWeight(suggestion.load)} lb</span>` +
+      `<span class="result-secondary">${deltaTxt}</span>` +
+      (suggestion.warning ? `<span class="result-note">${suggestion.warning}</span>` : '');
   }
 
   function renderTarget() {
     const out = targetLoad($('targetRm').value,$('targetReps').value,$('targetRpe').value,$('targetIncrement').value);
+    lastTargetOut = out;
+    renderAfterSetResult(null);
     if (!out) {
       lastTargetCopy = '';
-      $('targetLoadResult').innerHTML = '<span class="result-primary">Charge cible : --</span>';
+      $('targetLoadResult').innerHTML = '<span class="result-primary">Charge de départ suggérée : --</span>';
       return;
     }
     const loadTxt = formatWeight(out.load);
     const theoTxt = out.theoretical.toFixed(1);
     const pctTxt = (out.intensity * 100).toFixed(1);
+    let note = '';
+    if (out.incrementTooCoarse) {
+      note = `L’incrément sélectionné est trop grand pour cette charge. Charge suggérée minimale : ${loadTxt} lb.`;
+    } else if (out.significantRounding) {
+      note = 'L’incrément choisi est assez grand pour cette charge. Un incrément plus petit donnera une suggestion plus précise.';
+    }
     $('targetLoadResult').innerHTML =
-      `<span class="result-primary">Charge réalisable : ${loadTxt} lb</span>` +
-      `<span class="result-secondary">Charge théorique : ${theoTxt} lb · ${pctTxt} % du 1RM</span>`;
-    lastTargetCopy = `Charge réalisable : ${loadTxt} lb · Charge théorique : ${theoTxt} lb · ${pctTxt} % du 1RM`;
+      `<span class="result-primary">Charge de départ suggérée</span>` +
+      `<span class="result-primary result-load">${loadTxt} lb</span>` +
+      `<span class="result-secondary">Théorique : ${theoTxt} lb · Environ ${pctTxt} % du 1RM</span>` +
+      (note ? `<span class="result-note">${note}</span>` : '');
+    lastTargetCopy = `Charge de départ suggérée : ${loadTxt} lb · Théorique : ${theoTxt} lb · Environ ${pctTxt} % du 1RM`;
+  }
+
+  function handleAfterSet(feel) {
+    if (!lastTargetOut) {
+      renderAfterSetResult(null);
+      return;
+    }
+    const suggestion = suggestNextLoad(
+      lastTargetOut.load,
+      $('targetReps').value,
+      $('targetRpe').value,
+      feel,
+      $('targetIncrement').value
+    );
+    renderAfterSetResult(suggestion);
   }
 
   function updatePlateMode(preserveBar) {
@@ -517,7 +713,11 @@
     ).join('');
     const text = out.exact
       ? `Charge exacte atteinte : ${confirmed}${cfg.collarsEach ? ' · collets inclus' : ''}.`
-      : `Charge exacte impossible avec ce jeu. Charge inférieure la plus proche : ${confirmed} (écart ${out.difference.toFixed(2)} ${cfg.unit}).`;
+      : [
+          `Charge demandée : ${out.requestedTotal} ${cfg.unit}`,
+          `Plus proche sous la cible : ${confirmed}`,
+          Number.isFinite(out.nearestAbove) ? `Plus proche au-dessus : ${out.nearestAbove} ${cfg.unit}` : null
+        ].filter(Boolean).join(' · ');
     setMessage($('plateMessage'), text, out.exact ? '' : 'warn');
     lastPlatesCopy = `Par côté : ${summary}\nTotal confirmé : ${confirmed}\n${text}`;
   }
@@ -602,6 +802,8 @@
   function resetTool(key, { skipSave } = {}) {
     if (key === 'warmup') {
       setEquipment(DEFAULTS.equipment);
+      warmupCompact = false;
+      updateWarmupCompactControl();
       $('targetWeight').value = DEFAULTS.targetWeight;
       $('topReps').value = DEFAULTS.topReps;
       $('warmupBar').value = DEFAULTS.warmupBar;
@@ -644,8 +846,8 @@
     fillSelect($('topReps'), [1,2,3,4,5,6,7,8,9,10], DEFAULTS.topReps);
     fillSelect($('reps'), [1,2,3,4,5,6,7,8,9,10,11,12], DEFAULTS.reps);
     fillSelect($('targetReps'), [1,2,3,4,5,6,7,8,9,10,11,12], DEFAULTS.targetReps);
-    fillSelect($('rpe'), ['10','9.5','9','8.5','8','7.5','7','6.5'], DEFAULTS.rpe);
-    fillSelect($('targetRpe'), ['10','9.5','9','8.5','8','7.5','7','6.5'], DEFAULTS.targetRpe);
+    fillRpeSelect($('rpe'), DEFAULTS.rpe);
+    fillRpeSelect($('targetRpe'), DEFAULTS.targetRpe);
 
     const saved = loadState();
     applySavedState(saved);
@@ -664,6 +866,15 @@
       scheduleSave();
     }));
 
+    const compactBtn = $('warmupCompactToggle');
+    if (compactBtn) {
+      compactBtn.addEventListener('click', () => {
+        warmupCompact = !warmupCompact;
+        renderWarmup();
+        scheduleSave();
+      });
+    }
+
     const onChangeSave = fn => () => { fn(); scheduleSave(); };
     ['targetWeight','topReps','warmupBar','warmupIncrement'].forEach(id => $(id).addEventListener('input', onChangeSave(renderWarmup)));
     ['charge','reps','rpe'].forEach(id => $(id).addEventListener('input', onChangeSave(renderRm)));
@@ -674,6 +885,9 @@
         renderTarget();
         scheduleSave();
       }
+    });
+    document.querySelectorAll('[data-feel]').forEach(btn => {
+      btn.addEventListener('click', () => handleAfterSet(btn.dataset.feel));
     });
     $('plateMode').addEventListener('change', () => { updatePlateMode(false); scheduleSave(); });
     $('plateBar').addEventListener('change', onChangeSave(renderPlates));
