@@ -26,13 +26,33 @@ for (const id of CRITICAL_IDS) {
 
 assert.ok(!html.includes('raw.githubusercontent.com'), 'External branding URL found in index.html');
 assert.ok(!html.includes('hero-logo'), 'Hero watermark marker found in index.html');
+assert.ok(!html.includes('DM+Serif+Display') && !html.includes('DM Serif Display'), 'DM Serif Display should be removed');
+assert.ok(html.includes('styles.css'), 'styles.css link missing in index.html');
+assert.ok(fs.existsSync(path.join(root, 'styles.css')), 'Missing styles.css');
 assert.ok(fs.existsSync(path.join(root, 'assets', 'kr-logo-lockup.png')), 'Missing lockup logo');
 assert.ok(fs.existsSync(path.join(root, 'assets', 'kr-monogram.png')), 'Missing monogram logo');
+assert.ok(fs.existsSync(path.join(root, 'assets', 'favicon-32.png')), 'Missing favicon-32.png');
+assert.ok(fs.existsSync(path.join(root, 'assets', 'favicon-48.png')), 'Missing favicon-48.png');
+assert.ok(fs.existsSync(path.join(root, 'assets', 'apple-touch-icon.png')), 'Missing apple-touch-icon.png');
 assert.ok(fs.existsSync(path.join(root, 'build.json')), 'Missing build.json');
+assert.ok(html.includes('<fieldset>') && html.includes('<legend>Équipement</legend>'), 'Equipment fieldset/legend missing');
+assert.ok(html.includes('id="warmupEquipment"'), 'warmupEquipment id must remain');
+assert.ok(html.includes('rel="canonical"'), 'canonical link missing');
+assert.ok(html.includes('property="og:title"'), 'og:title missing');
+assert.ok(html.includes('class="methodology"'), 'methodology panel missing');
+
+const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+assert.ok(!styles.includes('DM Serif Display'), 'DM Serif Display found in styles.css');
+assert.ok(styles.includes(':focus-visible'), 'focus-visible styles missing');
+assert.ok(styles.includes('max-width:900px'), '900px breakpoint missing');
+assert.ok(styles.includes('max-width:480px'), '480px breakpoint missing');
 
 const buildRaw = fs.readFileSync(path.join(root, 'build.json'), 'utf8').replace(/^\uFEFF/, '');
 const build = JSON.parse(buildRaw);
 assert.ok(build.version && build.commit, 'build.json must include version and commit');
+assert.equal(build.version, '1.9.1', 'build.json version should be 1.9.1');
+const buildBytes = fs.readFileSync(path.join(root, 'build.json'));
+assert.ok(!(buildBytes[0] === 0xEF && buildBytes[1] === 0xBB && buildBytes[2] === 0xBF), 'build.json must be UTF-8 without BOM');
 
 
 for (const barWeight of [10, 15, 20, 33, 35, 45]) {

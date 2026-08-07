@@ -322,6 +322,17 @@
     el.className = `message${type ? ` ${type}` : ''}`;
   }
 
+  function setInvalid(input, messageId, invalid) {
+    if (!input) return;
+    if (invalid) {
+      input.setAttribute('aria-invalid', 'true');
+      if (messageId) input.setAttribute('aria-describedby', messageId);
+    } else {
+      input.removeAttribute('aria-invalid');
+      input.removeAttribute('aria-describedby');
+    }
+  }
+
   function fillSelect(select, values, selected) {
     select.innerHTML = values.map(v => `<option value="${v}"${String(v)===String(selected)?' selected':''}>${v}</option>`).join('');
   }
@@ -413,7 +424,12 @@
     });
     $('warmupBody').innerHTML = '';
     lastWarmupCopy = '';
-    if (plan.error) { setMessage($('warmupMessage'), plan.error, 'error'); return; }
+    if (plan.error) {
+      setMessage($('warmupMessage'), plan.error, 'error');
+      setInvalid($('targetWeight'), 'warmupMessage', true);
+      return;
+    }
+    setInvalid($('targetWeight'), 'warmupMessage', false);
 
     const notes = [];
     if (plan.note) notes.push(plan.note);
@@ -480,8 +496,10 @@
     if (out.error) {
       $('plateResult').innerHTML = '<span class="result-primary">--</span>';
       setMessage($('plateMessage'), out.error, 'error');
+      setInvalid($('plateTotal'), 'plateMessage', true);
       return;
     }
+    setInvalid($('plateTotal'), 'plateMessage', false);
     const counts = new Map();
     out.plates.forEach(p => counts.set(p.l, (counts.get(p.l) || 0) + 1));
     const summary = [...counts.entries()].map(([l, q]) => `${q}× ${l} ${cfg.unit}`).join(' + ') || 'aucun disque';
