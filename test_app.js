@@ -30,8 +30,10 @@ assert.ok(fs.existsSync(path.join(root, 'assets', 'kr-logo-lockup.png')), 'Missi
 assert.ok(fs.existsSync(path.join(root, 'assets', 'kr-monogram.png')), 'Missing monogram logo');
 assert.ok(fs.existsSync(path.join(root, 'build.json')), 'Missing build.json');
 
-const build = JSON.parse(fs.readFileSync(path.join(root, 'build.json'), 'utf8'));
+const buildRaw = fs.readFileSync(path.join(root, 'build.json'), 'utf8').replace(/^\uFEFF/, '');
+const build = JSON.parse(buildRaw);
 assert.ok(build.version && build.commit, 'build.json must include version and commit');
+
 
 for (const barWeight of [10, 15, 20, 33, 35, 45]) {
   for (const target of [barWeight, barWeight + 1, barWeight + 5, 100, 515]) {
