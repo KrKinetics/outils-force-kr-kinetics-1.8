@@ -30,14 +30,19 @@
     </div>
   </header>
   <section class="hero" id="top">
-    <div class="hero-inner"><p class="eyebrow">Outils clients · Performance</p><h1>Outils de force</h1><div class="hero-rule"></div><p class="hero-copy">Planifier les charges, structurer une montée en charge et comparer les performances avec des outils simples, rapides et conçus pour le terrain.</p></div>
+    <div class="hero-inner">
+      <p class="eyebrow">Outils clients · Performance</p>
+      <h1>Outils de force</h1>
+      <div class="hero-rule"></div>
+      <p class="hero-copy">Charges, montée en charge et scores — simples, rapides, conçus pour le terrain.</p>
+    </div>
   </section>
   <nav class="tool-nav" aria-label="Outils">
     <div class="tool-nav-inner">
-      <a href="#warmup">Montée en charge</a>
+      <a href="#warmup"><span class="nav-full">Montée en charge</span><span class="nav-short">Échauffement</span></a>
       <a href="#one-rm">1RM</a>
-      <a href="#target-load">Charge cible</a>
-      <a href="#plates">Disques</a>
+      <a href="#target-load"><span class="nav-full">Charge cible</span><span class="nav-short">Charge</span></a>
+      <a href="#plates"><span class="nav-full">Disques</span><span class="nav-short">Disques</span></a>
       <a href="#scores">Scores</a>
     </div>
   </nav>
@@ -62,8 +67,9 @@
           <div class="field"><label for="warmupIncrement">Plus petit incrément</label><select id="warmupIncrement"><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div>
         </div>
         <p class="hint" id="warmupHint"></p>
+        <p class="inline-action"><button type="button" class="text-link" id="warmupCompactToggle" aria-pressed="false">Réduire le nombre d’étapes</button></p>
         <div id="warmupMessage" class="message" hidden aria-live="polite"></div>
-        <div class="table-wrap"><table><caption>Plan de montée en charge</caption><thead><tr><th scope="col">Série</th><th scope="col">Reps</th><th scope="col">Étape</th><th scope="col">Charge</th></tr></thead><tbody id="warmupBody"></tbody></table></div>
+        <div class="table-wrap"><table class="responsive-table warmup-table"><caption>Montée en charge suggérée</caption><colgroup><col><col><col><col></colgroup><thead><tr><th scope="col">Série</th><th scope="col">Reps</th><th scope="col">Étape</th><th scope="col">Charge</th></tr></thead><tbody id="warmupBody"></tbody></table></div>
         <div class="tool-actions">
           <button type="button" class="btn" data-copy="warmup">Copier</button>
           <button type="button" class="btn btn-secondary" data-reset="warmup">Réinitialiser</button>
@@ -76,6 +82,10 @@
           <div class="field"><label for="reps">Répétitions</label><select id="reps"></select></div>
           <div class="field"><label for="rpe">RPE</label><select id="rpe"></select></div>
         </div>
+        <details class="help-details">
+          <summary>C’est quoi le RPE ?</summary>
+          <p>Le RPE décrit la difficulté de la série. RPE 10 = effort maximal, RPE 8 = environ 2 répétitions encore possibles.</p>
+        </details>
         <div class="result" id="rmResult" aria-live="polite">
           <span class="result-primary">1RM estimé : --</span>
         </div>
@@ -94,9 +104,23 @@
           <div class="field"><label for="targetIncrement">Incrément disponible</label><select id="targetIncrement"><option value="0.5">0,5 lb</option><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div>
           <div class="field full"><button class="btn" id="useEstimatedRm" type="button">Utiliser le 1RM estimé</button></div>
         </div>
+        <details class="help-details">
+          <summary>C’est quoi le RPE ?</summary>
+          <p>Le RPE décrit la difficulté de la série. RPE 10 = effort maximal, RPE 8 = environ 2 répétitions encore possibles.</p>
+        </details>
         <div class="result" id="targetLoadResult" aria-live="polite">
-          <span class="result-primary">Charge cible : --</span>
+          <span class="result-primary">Charge de départ suggérée : --</span>
         </div>
+        <details class="after-set" id="afterSet">
+          <summary>Ajuster après ma série</summary>
+          <p class="hint">Comment la série s’est-elle passée ?</p>
+          <div class="after-set-actions">
+            <button type="button" class="btn btn-secondary" data-feel="easier">Plus facile que prévu</button>
+            <button type="button" class="btn btn-secondary" data-feel="same">Comme prévu</button>
+            <button type="button" class="btn btn-secondary" data-feel="harder">Plus difficile que prévu</button>
+          </div>
+          <div class="result" id="afterSetResult" hidden aria-live="polite"></div>
+        </details>
         <div class="tool-actions">
           <button type="button" class="btn" data-copy="target">Copier</button>
           <button type="button" class="btn btn-secondary" data-reset="target">Réinitialiser</button>
@@ -114,7 +138,7 @@
         <div class="result" id="plateResult">--</div>
         <div class="plate-visual" id="plateVisual" aria-label="Disposition des disques"></div>
         <div id="plateMessage" class="message" hidden aria-live="polite"></div>
-        <div class="table-wrap"><table><caption>Répartition des disques</caption><thead><tr><th scope="col">Disque</th><th scope="col">Par côté</th><th scope="col">Total</th></tr></thead><tbody id="plateBody"></tbody></table></div>
+        <div class="table-wrap"><table class="responsive-table plates-table"><caption>Répartition des disques</caption><thead><tr><th scope="col">Disque</th><th scope="col">Par côté</th><th scope="col">Total</th></tr></thead><tbody id="plateBody"></tbody></table></div>
         <div class="tool-actions">
           <button type="button" class="btn" data-copy="plates">Copier</button>
           <button type="button" class="btn btn-secondary" data-reset="plates">Réinitialiser</button>
@@ -135,9 +159,9 @@
           <div class="score"><span class="score-label">IPF GL</span><span class="score-value" id="ipfGlScore">--</span></div>
         </div>
         <div class="score-help">
-          <strong>DOTS</strong> — score relatif au poids corporel (plafonds appliqués).<br>
-          <strong>Wilks</strong> — coefficient historique original (plafonds appliqués).<br>
-          <strong>IPF GL</strong> — points Goodlift IPF (classique / équipé).
+          <strong>DOTS</strong> — comparaison générale<br>
+          <strong>Wilks</strong> — formule historique<br>
+          <strong>IPF GL</strong> — formule IPF
         </div>
         <div id="scoreMessage" class="message" hidden aria-live="polite"></div>
         <div class="tool-actions">
@@ -156,11 +180,20 @@
         <li><strong>IPF GL</strong> — points Goodlift IPF (classique / équipé).</li>
         <li><strong>IWF</strong> — jeu de disques et collets de compétition pour le chargement de barre.</li>
       </ul>
+      <h3>Sources</h3>
+      <ul class="sources">
+        <li>RPE / RIR — Helms et littérature associée</li>
+        <li>Relation répétitions–%1RM — littérature de référence</li>
+        <li>IPF GL — International Powerlifting Federation</li>
+        <li>IWF Equipment — International Weightlifting Federation</li>
+        <li>DOTS / Wilks — coefficients utilisés dans les outils</li>
+      </ul>
+      <p class="sources-date">Références vérifiées : août 2026</p>
       <p>Les résultats sont des estimations à adapter au contexte de l’athlète.</p>
     </details>
     <footer>
       <strong>KR Kinetics</strong> · Force, conditionnement & nutrition · Kevin Racine
-      <div class="build-meta" id="buildMeta">Build 1.9.1 · 6214402</div>
+      <div class="build-meta" id="buildMeta">Build 1.10.0</div>
     </footer>
   </main>
   <script src="app.js"></script>

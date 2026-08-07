@@ -1,0 +1,152 @@
+[
+  {
+    "width": 320,
+    "height": 568,
+    "metrics": {
+      "page": true,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "nav": {
+        "sw": 320,
+        "cw": 320,
+        "overflow": false
+      },
+      "table": {
+        "sw": 291,
+        "cw": 262,
+        "overflow": true
+      },
+      "warmupTable": {
+        "sw": 291,
+        "cw": 262,
+        "overflow": true
+      },
+      "plateVisual": {
+        "sw": 259,
+        "cw": 259,
+        "overflow": false
+      },
+      "h1": true
+    }
+  },
+  {
+    "width": 375,
+    "height": 812,
+    "metrics": {
+      "page": true,
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "nav": {
+        "sw": 375,
+        "cw": 375,
+        "overflow": false
+      },
+      "table": {
+        "sw": 346,
+        "cw": 317,
+        "overflow": true
+      },
+      "warmupTable": {
+        "sw": 346,
+        "cw": 317,
+        "overflow": true
+      },
+      "plateVisual": {
+        "sw": 314,
+        "cw": 314,
+        "overflow": false
+      },
+      "h1": true
+    }
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "page": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "nav": {
+        "sw": 390,
+        "cw": 390,
+        "overflow": false
+      },
+      "table": {
+        "sw": 361,
+        "cw": 332,
+        "overflow": true
+      },
+      "warmupTable": {
+        "sw": 361,
+        "cw": 332,
+        "overflow": true
+      },
+      "plateVisual": {
+        "sw": 329,
+        "cw": 329,
+        "overflow": false
+      },
+      "h1": true
+    }
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "metrics": {
+      "page": true,
+      "scrollWidth": 430,
+      "innerWidth": 430,
+      "nav": {
+        "sw": 430,
+        "cw": 430,
+        "overflow": false
+      },
+      "table": {
+        "sw": 366,
+        "cw": 366,
+        "overflow": false
+      },
+      "warmupTable": {
+        "sw": 366,
+        "cw": 366,
+        "overflow": false
+      },
+      "plateVisual": {
+        "sw": 363,
+        "cw": 363,
+        "overflow": false
+      },
+      "h1": true
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "page": true,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "nav": {
+        "sw": 1120,
+        "cw": 1120,
+        "overflow": false
+      },
+      "table": {
+        "sw": 1072,
+        "cw": 1072,
+        "overflow": false
+      },
+      "warmupTable": {
+        "sw": 1072,
+        "cw": 1072,
+        "overflow": false
+      },
+      "plateVisual": {
+        "sw": 1071,
+        "cw": 1071,
+        "overflow": false
+      },
+      "h1": true
+    }
+  }
+]

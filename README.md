@@ -25,7 +25,7 @@ Produit statique (HTML + CSS + JS), sans framework.
 
 1. **Montée en charge** — échauffement progressif (barre, haltères, machine)
 2. **1RM estimé** — estimation à partir de charge × reps × RPE
-3. **Charge cible** — conversion d’un 1RM vers une charge réalisable
+3. **Charge cible** — conversion d’un 1RM vers une charge de départ suggérée
 4. **Chargement de barre** — combinaison de disques (gym lb/kg, IWF)
 5. **Scores** — DOTS, Wilks original, IPF GL Points
 
