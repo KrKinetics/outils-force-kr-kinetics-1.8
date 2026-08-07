@@ -70,4 +70,15 @@ assert.equal(app.estimate1RM(Infinity, 5, 10), null);
 assert.ok(app.distributePlates(Infinity, 20, app.PLATE_CONFIGS.iwf).error);
 assert.ok(app.distributePlates(1e12, 20, app.PLATE_CONFIGS.iwf).error);
 
+const roundingPlan = app.buildWarmupPlan({
+  target: 46, topReps: 5, increment: 5, equipment: 'barbell', barWeight: 45
+});
+assert.ok(!roundingPlan.error, roundingPlan.error);
+assert.equal(roundingPlan.requested, 46);
+assert.equal(roundingPlan.achievable, 45);
+
+const lbFromKg = 100 / app.LB_TO_KG;
+const kgRoundTrip = lbFromKg * app.LB_TO_KG;
+approx(kgRoundTrip, 100, 1e-9);
+
 console.log('All tests passed.');

@@ -13,25 +13,39 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
-    :root{--ink:#1a1a2e;--ink-mid:#16213e;--ink-deep:#0f3460;--paper:#f6f8fb;--surface:#fff;--muted:#64748b;--line:#dfe5ec;--accent:#991f2d;--accent-deep:#5c1023;--accent-soft:#f8ecee;--green:#2d6a4f;--green-soft:#eaf4ef;--stat:#60a5fa;--warning:#9a6700;--error:#b42318;--shadow:0 12px 30px rgba(15,52,96,.07)}
+    :root{--ink:#1a1a2e;--ink-mid:#16213e;--ink-deep:#0f3460;--paper:#f6f8fb;--surface:#fff;--muted:#64748b;--line:#dfe5ec;--accent:#991f2d;--accent-deep:#5c1023;--accent-soft:#f8ecee;--green:#2d6a4f;--green-soft:#eaf4ef;--stat:#60a5fa;--warning:#9a6700;--error:#b42318;--shadow:0 12px 30px rgba(15,52,96,.07);--topbar-h:64px}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.5;text-rendering:optimizeLegibility}button,input,select{font:inherit}::selection{background:rgba(153,31,45,.2)}
     .topbar{position:sticky;top:0;z-index:40;background:rgba(26,26,46,.96);border-top:3px solid var(--green);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)}
-    .topbar-inner{width:min(1120px,calc(100% - 32px));min-height:64px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .topbar-inner{width:min(1120px,calc(100% - 32px));min-height:var(--topbar-h);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:18px}
     .brand{display:inline-flex;align-items:center;text-decoration:none;line-height:0}.brand-logo{display:block;height:40px;width:auto;max-width:min(200px,62vw)}.topbar-meta{color:rgba(255,255,255,.55);font-size:.67rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
     .hero{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:radial-gradient(ellipse 48% 95% at 92% 25%,rgba(45,106,79,.2),transparent 68%),radial-gradient(ellipse 48% 90% at 5% 100%,rgba(153,31,45,.2),transparent 68%),linear-gradient(140deg,var(--ink),var(--ink-mid) 52%,var(--ink-deep));border-bottom:1px solid rgba(255,255,255,.08)}
     .hero:before{content:"";position:absolute;inset:0;z-index:0;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.085) 1px,transparent 0);background-size:18px 18px;opacity:.55;pointer-events:none}
-    .hero-inner{position:relative;z-index:1;width:min(1120px,calc(100% - 40px));min-height:340px;margin:auto;display:grid;align-content:center;padding:56px 0 60px}.eyebrow{margin:0 0 10px;color:rgba(255,255,255,.64);font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase}h1{margin:0;font-family:"Bebas Neue",sans-serif;font-size:clamp(3.5rem,8vw,6.4rem);font-weight:400;line-height:.9;letter-spacing:.035em;text-transform:uppercase;text-shadow:0 4px 30px rgba(0,0,0,.24)}.hero-rule{width:74px;height:3px;margin:19px 0;background:var(--accent)}.hero-copy{max-width:650px;margin:0;color:rgba(255,255,255,.82);font-size:clamp(.98rem,2vw,1.08rem);text-shadow:0 2px 18px rgba(0,0,0,.2)}
-    .main{width:min(1120px,calc(100% - 32px));margin:auto;padding:30px 0 64px}.context-strip{display:flex;justify-content:space-between;gap:24px;margin-bottom:18px;padding:15px 18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);color:var(--muted);font-size:.85rem}.context-strip strong{color:var(--ink);font-weight:700}
+    .hero-inner{position:relative;z-index:1;width:min(1120px,calc(100% - 40px));min-height:260px;margin:auto;display:grid;align-content:center;padding:36px 0 40px}.eyebrow{margin:0 0 10px;color:rgba(255,255,255,.64);font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase}h1{margin:0;font-family:"Bebas Neue",sans-serif;font-size:clamp(3.5rem,8vw,6.4rem);font-weight:400;line-height:.9;letter-spacing:.035em;text-transform:uppercase;text-shadow:0 4px 30px rgba(0,0,0,.24)}.hero-rule{width:74px;height:3px;margin:19px 0;background:var(--accent)}.hero-copy{max-width:650px;margin:0;color:rgba(255,255,255,.82);font-size:clamp(.98rem,2vw,1.08rem);text-shadow:0 2px 18px rgba(0,0,0,.2)}
+    .tool-nav{position:sticky;top:var(--topbar-h);z-index:30;background:rgba(246,248,251,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .tool-nav-inner{width:min(1120px,calc(100% - 32px));margin:auto;display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+    .tool-nav a{flex:0 0 auto;display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;color:var(--ink-mid);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+    .tool-nav a:hover,.tool-nav a:focus-visible{color:var(--accent);border-bottom-color:var(--accent);outline:none}
+    .main{width:min(1120px,calc(100% - 32px));margin:auto;padding:24px 0 64px}
+    .main-toolbar{display:flex;justify-content:flex-end;margin-bottom:14px}
+    .note-strip{margin-bottom:18px;padding:12px 16px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--ink-deep);box-shadow:var(--shadow);color:var(--muted);font-size:.85rem}
     .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}.card{grid-column:span 12;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);box-shadow:var(--shadow);padding:22px}.card:nth-child(2),.card:nth-child(3){grid-column:span 6}.card:nth-child(4){border-top-color:var(--green)}.card:nth-child(5){border-top-color:var(--ink-deep)}
     .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:14px;margin-bottom:17px;border-bottom:1px solid var(--line)}h2{margin:0;font-family:"DM Serif Display",Georgia,serif;font-size:clamp(1.35rem,2.5vw,1.7rem);font-weight:400;line-height:1.15}.card-head p{margin:5px 0 0;color:var(--muted);font-size:.88rem}.index{color:var(--accent);font-size:.7rem;font-weight:700;letter-spacing:.16em}.index:before{content:"";display:block;width:24px;height:2px;margin-bottom:4px;background:currentColor}.card:nth-child(4) .index{color:var(--green)}.card:nth-child(5) .index{color:var(--ink-deep)}
     .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field.full{grid-column:1/-1}label{display:block;margin-bottom:6px;color:var(--ink-mid);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}input,select{width:100%;min-height:44px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:var(--ink);outline:none;transition:.15s}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(153,31,45,.11)}
     .segmented{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #cbd5e1}.segmented button{min-height:44px;border:0;border-right:1px solid #cbd5e1;background:#f8fafc;color:var(--ink-mid);font-size:.73rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}.segmented button:last-child{border-right:0}.segmented button[aria-pressed="true"]{background:var(--accent);color:#fff}.segmented button:hover:not([aria-pressed="true"]){background:#eef2f7}
-    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 17px;border:0;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}.btn:hover{background:var(--accent-deep)}.hint{margin:9px 0 0;color:var(--muted);font-size:.82rem}.result{margin-top:15px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);font-weight:700}.card:nth-child(4) .result{border-left-color:var(--green);background:var(--green-soft)}.message{margin-top:12px;padding:9px 11px;border-left:3px solid var(--line);background:#f8fafc;color:var(--muted);font-size:.83rem}.message[hidden]{display:none}.message.warn{border-left-color:var(--warning);background:#fffbeb;color:var(--warning)}.message.error{border-left-color:var(--error);background:#fff1f0;color:var(--error)}
-    .table-wrap{overflow:auto;margin-top:15px;border:1px solid var(--line)}table{width:100%;min-width:520px;border-collapse:collapse;font-size:.84rem}thead{background:var(--accent);color:#fff}.card:nth-child(4) thead{background:var(--green)}th{padding:9px 11px;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}td{padding:9px 11px;border-bottom:1px solid var(--line)}tbody tr:nth-child(even){background:#f8fafc}tbody tr:last-child td{border-bottom:0}
-    .plate-visual{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-height:62px;margin:14px 0;padding:13px;background:#eef2f7;border-left:3px solid var(--green)}.bar-label,.collar-label,.plate{display:inline-grid;place-items:center;border:1px solid rgba(0,0,0,.18);border-radius:2px;font-weight:700}.bar-label{height:36px;padding:0 9px;background:var(--ink-mid);color:#fff}.collar-label{height:40px;padding:0 7px;background:#64748b;color:#fff;font-size:.67rem}.plate{width:42px;height:50px}.plate.small{width:33px;height:40px;font-size:.74rem}.plate.tiny{width:26px;height:32px;font-size:.64rem}
-    .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;background:rgba(255,255,255,.13)}.score{min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink-mid);color:#fff;padding:15px;text-align:center}.score:nth-child(2){background:var(--ink)}.score:nth-child(3){background:var(--ink-deep)}.score-label{color:rgba(255,255,255,.56);font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}.score-value{margin-top:4px;color:var(--stat);font-family:"Bebas Neue",sans-serif;font-size:2.15rem;letter-spacing:.04em}footer{padding:30px 8px 0;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-align:center;text-transform:uppercase}footer strong{color:var(--accent)}.build-meta{margin-top:8px;font-size:.68rem;letter-spacing:.1em;color:#94a3b8;text-transform:none}
-    @media(max-width:820px){.card:nth-child(2),.card:nth-child(3){grid-column:span 12}.context-strip{display:block}.context-strip span{display:block}.context-strip span+span{margin-top:6px}}
-    @media(max-width:650px){.topbar-inner{width:min(100% - 22px,1120px);min-height:58px}.topbar-meta{display:none}.brand-logo{height:32px}.hero-inner{width:min(100% - 28px,1120px);min-height:285px;padding:44px 0 48px}.main{width:min(100% - 20px,1120px);padding-top:20px}.fields,.score-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:17px}.segmented{grid-template-columns:1fr}.segmented button{border-right:0;border-bottom:1px solid #cbd5e1}.segmented button:last-child{border-bottom:0}h1{font-size:clamp(3.3rem,18vw,4.8rem)}}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 17px;border:0;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}.btn:hover{background:var(--accent-deep)}
+    .btn-secondary{background:#fff;color:var(--ink-mid);border:1px solid #cbd5e1}.btn-secondary:hover{background:#f1f5f9;color:var(--ink);border-color:#94a3b8}
+    .tool-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+    .hint{margin:9px 0 0;color:var(--muted);font-size:.82rem}.result{margin-top:15px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);font-weight:700}.card:nth-child(4) .result{border-left-color:var(--green);background:var(--green-soft)}
+    .result-primary{display:block;font-weight:700}.result-secondary{display:block;margin-top:4px;color:var(--ink-mid);font-size:.88rem;font-weight:500}.result-note{display:block;margin-top:6px;color:var(--muted);font-size:.78rem;font-weight:500}
+    .message{margin-top:12px;padding:9px 11px;border-left:3px solid var(--line);background:#f8fafc;color:var(--muted);font-size:.83rem}.message[hidden]{display:none}.message.warn{border-left-color:var(--warning);background:#fffbeb;color:var(--warning)}.message.error{border-left-color:var(--error);background:#fff1f0;color:var(--error)}
+    .table-wrap{overflow:auto;margin-top:15px;border:1px solid var(--line)}table{width:100%;min-width:520px;border-collapse:collapse;font-size:.84rem}caption{padding:9px 11px;text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mid);background:#f8fafc;border-bottom:1px solid var(--line)}thead{background:var(--accent);color:#fff}.card:nth-child(4) thead{background:var(--green)}th{padding:9px 11px;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}td{padding:9px 11px;border-bottom:1px solid var(--line)}tbody tr:nth-child(even){background:#f8fafc}tbody tr:last-child td{border-bottom:0}
+    .plate-side-note{margin:10px 0 0;color:var(--muted);font-size:.82rem;font-weight:600}
+    .plate-visual{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-height:62px;margin:14px 0;padding:13px;background:#eef2f7;border-left:3px solid var(--green)}.bar-label,.collar-label,.side-label,.plate{display:inline-grid;place-items:center;border:1px solid rgba(0,0,0,.18);border-radius:2px;font-weight:700}.bar-label{height:36px;padding:0 9px;background:var(--ink-mid);color:#fff}.collar-label{height:40px;padding:0 7px;background:#64748b;color:#fff;font-size:.67rem}.side-label{height:36px;padding:0 9px;background:var(--green);color:#fff;font-size:.67rem;letter-spacing:.04em;text-transform:uppercase}.plate{width:42px;height:50px}.plate.small{width:33px;height:40px;font-size:.74rem}.plate.tiny{width:26px;height:32px;font-size:.64rem}
+    .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;background:rgba(255,255,255,.13)}.score{min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink-mid);color:#fff;padding:15px;text-align:center}.score:nth-child(2){background:var(--ink)}.score:nth-child(3){background:var(--ink-deep)}.score-label{color:rgba(255,255,255,.56);font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}.score-value{margin-top:4px;color:var(--stat);font-family:"Bebas Neue",sans-serif;font-size:2.15rem;letter-spacing:.04em}
+    .score-help{margin-top:12px;padding:10px 12px;border:1px solid var(--line);background:#f8fafc;color:var(--muted);font-size:.78rem;line-height:1.45}.score-help strong{color:var(--ink-mid);font-weight:700}
+    footer{padding:30px 8px 0;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-align:center;text-transform:uppercase}footer strong{color:var(--accent)}.build-meta{margin-top:8px;font-size:.68rem;letter-spacing:.1em;color:#94a3b8;text-transform:none}
+    @media(max-width:820px){.card:nth-child(2),.card:nth-child(3){grid-column:span 12}}
+    @media(max-width:650px){:root{--topbar-h:58px}.topbar-inner{width:min(100% - 22px,1120px)}.topbar-meta{display:none}.brand-logo{height:32px}.hero-inner{width:min(100% - 28px,1120px);min-height:220px;padding:28px 0 32px}.tool-nav-inner,.main{width:min(100% - 20px,1120px)}.main{padding-top:18px}.fields,.score-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:17px}.segmented{grid-template-columns:1fr}.segmented button{border-right:0;border-bottom:1px solid #cbd5e1}.segmented button:last-child{border-bottom:0}h1{font-size:clamp(3.3rem,18vw,4.8rem)}}
   </style>
 </head>
 <body>
@@ -46,13 +60,114 @@
   <section class="hero" id="top">
     <div class="hero-inner"><p class="eyebrow">Outils clients · Performance</p><h1>Outils de force</h1><div class="hero-rule"></div><p class="hero-copy">Planifier les charges, structurer une montée en charge et comparer les performances avec des outils simples, rapides et conçus pour le terrain.</p></div>
   </section>
-  <main class="main"><div class="context-strip"><span><strong>KR Kinetics.</strong> Une suite d’outils intégrée à l’écosystème de coaching.</span><span>Les résultats sont des estimations à adapter au contexte.</span></div>
+  <nav class="tool-nav" aria-label="Outils">
+    <div class="tool-nav-inner">
+      <a href="#warmup">Montée en charge</a>
+      <a href="#one-rm">1RM</a>
+      <a href="#target-load">Charge cible</a>
+      <a href="#plates">Disques</a>
+      <a href="#scores">Scores</a>
+    </div>
+  </nav>
+  <main class="main">
+    <div class="main-toolbar">
+      <button type="button" class="btn btn-secondary" id="resetAll">Réinitialiser tout</button>
+    </div>
+    <div class="note-strip">Estimations à adapter au contexte de l’athlète.</div>
     <div class="grid">
-      <section class="card"><div class="card-head"><div><h2>Montée en charge</h2><p>Construire un échauffement progressif selon l’équipement disponible.</p></div><span class="index">01</span></div><div class="fields"><div class="field full"><label>Équipement</label><div class="segmented" id="warmupEquipment"><button type="button" data-equip="barbell" aria-pressed="true">Barre</button><button type="button" data-equip="dumbbells" aria-pressed="false">Haltères</button><button type="button" data-equip="machine" aria-pressed="false">Machine</button></div></div><div class="field"><label for="targetWeight">Charge cible</label><input id="targetWeight" type="number" value="315" min="1" max="5000" step="1"></div><div class="field"><label for="topReps">Répétitions du top set</label><select id="topReps"></select></div><div class="field" id="warmupBarWrap"><label for="warmupBar">Poids de la barre</label><select id="warmupBar"><option value="10">10 lb</option><option value="15">15 lb</option><option value="20">20 lb</option><option value="33">33 lb</option><option value="35">35 lb</option><option value="45" selected>45 lb</option></select></div><div class="field"><label for="warmupIncrement">Plus petit incrément</label><select id="warmupIncrement"><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div></div><p class="hint" id="warmupHint"></p><div id="warmupMessage" class="message" hidden aria-live="polite"></div><div class="table-wrap"><table><thead><tr><th>Série</th><th>Reps</th><th>Étape</th><th>Charge</th></tr></thead><tbody id="warmupBody"></tbody></table></div></section>
-      <section class="card"><div class="card-head"><div><h2>1RM estimé</h2><p>Estimer une répétition maximale à partir d’une série et du RPE.</p></div><span class="index">02</span></div><div class="fields"><div class="field"><label for="charge">Charge</label><input id="charge" type="number" value="315" min="1" max="5000"></div><div class="field"><label for="reps">Répétitions</label><select id="reps"></select></div><div class="field"><label for="rpe">RPE</label><select id="rpe"></select></div></div><div class="result" id="rmResult" aria-live="polite">1RM estimé : --</div></section>
-      <section class="card"><div class="card-head"><div><h2>Charge cible</h2><p>Convertir un 1RM de référence en charge adaptée aux répétitions et au RPE visés.</p></div><span class="index">03</span></div><div class="fields"><div class="field"><label for="targetRm">1RM de référence</label><input id="targetRm" type="number" value="400" min="1" max="5000"></div><div class="field"><label for="targetReps">Répétitions visées</label><select id="targetReps"></select></div><div class="field"><label for="targetRpe">RPE visé</label><select id="targetRpe"></select></div><div class="field"><label for="targetIncrement">Incrément disponible</label><select id="targetIncrement"><option value="0.5">0,5 lb</option><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div><div class="field full"><button class="btn" id="useEstimatedRm" type="button">Utiliser le 1RM estimé</button></div></div><div class="result" id="targetLoadResult" aria-live="polite">Charge cible : --</div></section>
-      <section class="card"><div class="card-head"><div><h2>Chargement de barre</h2><p>Trouver la combinaison exacte de disques selon le mode et la barre.</p></div><span class="index">04</span></div><div class="fields"><div class="field"><label for="plateMode">Configuration</label><select id="plateMode"><option value="lb">Gym — lb</option><option value="kgGym">Gym — kg</option><option value="iwf">Compétition IWF</option></select></div><div class="field"><label for="plateBar">Barre</label><select id="plateBar"></select></div><div class="field"><label for="plateTotal">Charge totale</label><input id="plateTotal" type="number" value="225" min="1" max="5000"></div></div><p class="hint" id="plateHint"></p><div class="result" id="plateResult">--</div><div class="plate-visual" id="plateVisual" aria-label="Disposition des disques"></div><div id="plateMessage" class="message" hidden aria-live="polite"></div><div class="table-wrap"><table><thead><tr><th>Disque</th><th>Par côté</th><th>Total</th></tr></thead><tbody id="plateBody"></tbody></table></div></section>
-      <section class="card"><div class="card-head"><div><h2>Scores de powerlifting</h2><p>Comparer un total selon DOTS, Wilks original et IPF GL Points.</p></div><span class="index">05</span></div><div class="fields"><div class="field"><label for="scoreUnit">Unité</label><select id="scoreUnit"><option value="kg">Kilogrammes</option><option value="lb">Livres</option></select></div><div class="field"><label for="scoreSex">Sexe</label><select id="scoreSex"><option value="m">Homme</option><option value="f">Femme</option></select></div><div class="field"><label for="scoreEquipment">Catégorie IPF</label><select id="scoreEquipment"><option value="classic">Classique</option><option value="equipped">Équipé</option></select></div><div class="field"><label for="scoreBw">Poids corporel</label><input id="scoreBw" type="number" value="100" min="1" max="1000" step="0.1"></div><div class="field"><label for="scoreTotal">Total SBD</label><input id="scoreTotal" type="number" value="500" min="1" max="10000" step="0.5"></div></div><div class="score-grid"><div class="score"><span class="score-label">DOTS</span><span class="score-value" id="dotsScore">--</span></div><div class="score"><span class="score-label">Wilks original</span><span class="score-value" id="wilksScore">--</span></div><div class="score"><span class="score-label">IPF GL</span><span class="score-value" id="ipfGlScore">--</span></div></div><div id="scoreMessage" class="message" hidden aria-live="polite"></div></section>
+      <section class="card" id="warmup">
+        <div class="card-head"><div><h2>Montée en charge</h2><p>Construire un échauffement progressif selon l’équipement disponible.</p></div><span class="index">01</span></div>
+        <div class="fields">
+          <div class="field full"><label>Équipement</label><div class="segmented" id="warmupEquipment"><button type="button" data-equip="barbell" aria-pressed="true">Barre</button><button type="button" data-equip="dumbbells" aria-pressed="false">Haltères</button><button type="button" data-equip="machine" aria-pressed="false">Machine</button></div></div>
+          <div class="field"><label for="targetWeight">Charge cible (lb)</label><input id="targetWeight" type="number" value="315" min="1" max="5000" step="1"></div>
+          <div class="field"><label for="topReps">Répétitions du top set</label><select id="topReps"></select></div>
+          <div class="field" id="warmupBarWrap"><label for="warmupBar">Poids de la barre (lb)</label><select id="warmupBar"><option value="10">10 lb</option><option value="15">15 lb</option><option value="20">20 lb</option><option value="33">33 lb</option><option value="35">35 lb</option><option value="45" selected>45 lb</option></select></div>
+          <div class="field"><label for="warmupIncrement">Plus petit incrément</label><select id="warmupIncrement"><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div>
+        </div>
+        <p class="hint" id="warmupHint"></p>
+        <div id="warmupMessage" class="message" hidden aria-live="polite"></div>
+        <div class="table-wrap"><table><caption>Plan de montée en charge</caption><thead><tr><th>Série</th><th>Reps</th><th>Étape</th><th>Charge</th></tr></thead><tbody id="warmupBody"></tbody></table></div>
+        <div class="tool-actions">
+          <button type="button" class="btn" data-copy="warmup">Copier</button>
+          <button type="button" class="btn btn-secondary" data-reset="warmup">Réinitialiser</button>
+        </div>
+      </section>
+      <section class="card" id="one-rm">
+        <div class="card-head"><div><h2>1RM estimé</h2><p>Estimer une répétition maximale à partir d’une série et du RPE.</p></div><span class="index">02</span></div>
+        <div class="fields">
+          <div class="field"><label for="charge">Charge (lb)</label><input id="charge" type="number" value="315" min="1" max="5000"></div>
+          <div class="field"><label for="reps">Répétitions</label><select id="reps"></select></div>
+          <div class="field"><label for="rpe">RPE</label><select id="rpe"></select></div>
+        </div>
+        <div class="result" id="rmResult" aria-live="polite">
+          <span class="result-primary">1RM estimé : --</span>
+        </div>
+        <p class="hint">Basé sur une table d’intensité RPE × répétitions.</p>
+        <div class="tool-actions">
+          <button type="button" class="btn" data-copy="rm">Copier</button>
+          <button type="button" class="btn btn-secondary" data-reset="rm">Réinitialiser</button>
+        </div>
+      </section>
+      <section class="card" id="target-load">
+        <div class="card-head"><div><h2>Charge cible</h2><p>Convertir un 1RM de référence en charge adaptée aux répétitions et au RPE visés.</p></div><span class="index">03</span></div>
+        <div class="fields">
+          <div class="field"><label for="targetRm">1RM de référence (lb)</label><input id="targetRm" type="number" value="400" min="1" max="5000"></div>
+          <div class="field"><label for="targetReps">Répétitions visées</label><select id="targetReps"></select></div>
+          <div class="field"><label for="targetRpe">RPE visé</label><select id="targetRpe"></select></div>
+          <div class="field"><label for="targetIncrement">Incrément disponible</label><select id="targetIncrement"><option value="0.5">0,5 lb</option><option value="2.5">2,5 lb</option><option value="5" selected>5 lb</option><option value="10">10 lb</option></select></div>
+          <div class="field full"><button class="btn" id="useEstimatedRm" type="button">Utiliser le 1RM estimé</button></div>
+        </div>
+        <div class="result" id="targetLoadResult" aria-live="polite">
+          <span class="result-primary">Charge cible : --</span>
+        </div>
+        <div class="tool-actions">
+          <button type="button" class="btn" data-copy="target">Copier</button>
+          <button type="button" class="btn btn-secondary" data-reset="target">Réinitialiser</button>
+        </div>
+      </section>
+      <section class="card" id="plates">
+        <div class="card-head"><div><h2>Chargement de barre</h2><p>Trouver la combinaison exacte de disques selon le mode et la barre.</p></div><span class="index">04</span></div>
+        <div class="fields">
+          <div class="field"><label for="plateMode">Configuration</label><select id="plateMode"><option value="lb">Gym — lb</option><option value="kgGym">Gym — kg</option><option value="iwf">Compétition IWF</option></select></div>
+          <div class="field"><label for="plateBar">Barre</label><select id="plateBar"></select></div>
+          <div class="field"><label for="plateTotal">Charge totale</label><input id="plateTotal" type="number" value="225" min="1" max="5000"></div>
+        </div>
+        <p class="hint" id="plateHint"></p>
+        <p class="plate-side-note">Disques indiqués par côté.</p>
+        <div class="result" id="plateResult">--</div>
+        <div class="plate-visual" id="plateVisual" aria-label="Disposition des disques"></div>
+        <div id="plateMessage" class="message" hidden aria-live="polite"></div>
+        <div class="table-wrap"><table><thead><tr><th>Disque</th><th>Par côté</th><th>Total</th></tr></thead><tbody id="plateBody"></tbody></table></div>
+        <div class="tool-actions">
+          <button type="button" class="btn" data-copy="plates">Copier</button>
+          <button type="button" class="btn btn-secondary" data-reset="plates">Réinitialiser</button>
+        </div>
+      </section>
+      <section class="card" id="scores">
+        <div class="card-head"><div><h2>Scores de powerlifting</h2><p>Comparer un total selon DOTS, Wilks original et IPF GL Points.</p></div><span class="index">05</span></div>
+        <div class="fields">
+          <div class="field"><label for="scoreUnit">Unité</label><select id="scoreUnit"><option value="kg">Kilogrammes</option><option value="lb">Livres</option></select></div>
+          <div class="field"><label for="scoreSex">Sexe</label><select id="scoreSex"><option value="m">Homme</option><option value="f">Femme</option></select></div>
+          <div class="field"><label for="scoreEquipment">Catégorie IPF</label><select id="scoreEquipment"><option value="classic">Classique</option><option value="equipped">Équipé</option></select></div>
+          <div class="field"><label for="scoreBw" id="scoreBwLabel">Poids corporel (kg)</label><input id="scoreBw" type="number" value="100" min="1" max="1000" step="0.1"></div>
+          <div class="field"><label for="scoreTotal" id="scoreTotalLabel">Total SBD (kg)</label><input id="scoreTotal" type="number" value="500" min="1" max="10000" step="0.5"></div>
+        </div>
+        <div class="score-grid">
+          <div class="score"><span class="score-label">DOTS</span><span class="score-value" id="dotsScore">--</span></div>
+          <div class="score"><span class="score-label">Wilks original</span><span class="score-value" id="wilksScore">--</span></div>
+          <div class="score"><span class="score-label">IPF GL</span><span class="score-value" id="ipfGlScore">--</span></div>
+        </div>
+        <div class="score-help">
+          <strong>DOTS</strong> — score relatif au poids corporel (plafonds appliqués).<br>
+          <strong>Wilks</strong> — coefficient historique original (plafonds appliqués).<br>
+          <strong>IPF GL</strong> — points Goodlift IPF (classique / équipé).
+        </div>
+        <div id="scoreMessage" class="message" hidden aria-live="polite"></div>
+        <div class="tool-actions">
+          <button type="button" class="btn" data-copy="scores">Copier</button>
+          <button type="button" class="btn btn-secondary" data-reset="scores">Réinitialiser</button>
+        </div>
+      </section>
     </div>
     <footer>
       <strong>KR Kinetics</strong> · Force, conditionnement & nutrition · Kevin Racine

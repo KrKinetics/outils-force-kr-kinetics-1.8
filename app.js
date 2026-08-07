@@ -99,22 +99,26 @@
       : finiteNumber(options.minimum ?? 5, .01, 500);
 
     if (target === null || increment === null || minimum === null || !Number.isInteger(reps) || reps < 1 || reps > 10) {
-      return { error:'Entrées invalides.' };
+      return { error:'Entrées invalides.', requested: target, achievable: null };
     }
     if (equipment === 'barbell' && target < minimum) {
-      return { error:`Le top set (${target} lb) est inférieur au poids de la barre (${minimum} lb).` };
+      return { error:`Le top set (${target} lb) est inférieur au poids de la barre (${minimum} lb).`, requested: target, achievable: null };
     }
 
     const roundedTop = roundToIncrement(target, increment);
     const topWeight = equipment === 'barbell' ? Math.max(minimum, roundedTop) : roundedTop;
-    if (topWeight < minimum) return { error:'La charge réalisable est sous la charge minimale de l’équipement.' };
+    if (topWeight < minimum) {
+      return { error:'La charge réalisable est sous la charge minimale de l’équipement.', requested: target, achievable: topWeight };
+    }
 
     if (Math.abs(topWeight - minimum) < 1e-9) {
       return {
         rows:[{reps, weight:topWeight, label:'Top set', top:true}],
         note: equipment === 'barbell'
           ? 'Aucune montée de charge n’est possible : le top set correspond à la barre sélectionnée.'
-          : 'Aucune montée de charge distincte n’est nécessaire à cette charge.'
+          : 'Aucune montée de charge distincte n’est nécessaire à cette charge.',
+        requested: target,
+        achievable: topWeight
       };
     }
 
@@ -131,7 +135,12 @@
     }
 
     rows.push({reps, weight:topWeight, label:'Top set', top:true});
-    return { rows, note: rows.length <= 2 ? 'Le nombre d’étapes a été réduit parce que la charge cible est proche de la charge minimale.' : '' };
+    return {
+      rows,
+      note: rows.length <= 2 ? 'Le nombre d’étapes a été réduit parce que la charge cible est proche de la charge minimale.' : '',
+      requested: target,
+      achievable: topWeight
+    };
   }
 
   function buildPlateDp(maxUnits, plates) {
@@ -266,16 +275,46 @@
     };
   }
 
-  const API = {RPE_TABLE,PLATE_CONFIGS,finiteNumber,roundToIncrement,estimate1RM,targetLoad,buildWarmupPlan,solveExactPlates,distributePlates,dotsCoefficient,wilksCoefficient,ipfGlCoefficient,calculateScores};
+  const API = {LB_TO_KG,RPE_TABLE,PLATE_CONFIGS,finiteNumber,roundToIncrement,estimate1RM,targetLoad,buildWarmupPlan,solveExactPlates,distributePlates,dotsCoefficient,wilksCoefficient,ipfGlCoefficient,calculateScores};
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   root.KRForce = API;
 
   if (typeof document === 'undefined') return;
 
   const $ = id => document.getElementById(id);
-  let equipment = 'barbell';
+  const STORAGE_KEY = 'kr-force-tools-v1';
+  const DEFAULTS = {
+    equipment: 'barbell',
+    targetWeight: '315',
+    topReps: '5',
+    warmupBar: '45',
+    warmupIncrement: '5',
+    charge: '315',
+    reps: '5',
+    rpe: '8',
+    targetRm: '400',
+    targetReps: '3',
+    targetRpe: '8',
+    targetIncrement: '5',
+    plateMode: 'lb',
+    plateBar: '45',
+    plateTotal: '225',
+    scoreUnit: 'kg',
+    scoreSex: 'm',
+    scoreEquipment: 'classic',
+    scoreBwKg: 100,
+    scoreTotalKg: 500
+  };
+
+  let equipment = DEFAULTS.equipment;
   let lastEstimatedRm = null;
-  let scoreCanonical = {bwKg:100,totalKg:500,unit:'kg'};
+  let scoreCanonical = {bwKg:DEFAULTS.scoreBwKg,totalKg:DEFAULTS.scoreTotalKg,unit:DEFAULTS.scoreUnit};
+  let saveTimer = null;
+  let lastWarmupCopy = '';
+  let lastRmCopy = '';
+  let lastTargetCopy = '';
+  let lastPlatesCopy = '';
+  let lastScoresCopy = '';
 
   function setMessage(el, text, type) {
     el.hidden = !text;
@@ -285,6 +324,80 @@
 
   function fillSelect(select, values, selected) {
     select.innerHTML = values.map(v => `<option value="${v}"${String(v)===String(selected)?' selected':''}>${v}</option>`).join('');
+  }
+
+  function formatWeight(value) {
+    return Number.isFinite(value) ? value.toFixed(value % 1 ? 1 : 0) : '--';
+  }
+
+  function setEquipment(next) {
+    equipment = next || 'barbell';
+    document.querySelectorAll('#warmupEquipment button').forEach(btn => {
+      btn.setAttribute('aria-pressed', String(btn.dataset.equip === equipment));
+    });
+  }
+
+  function updateScoreUnitLabels() {
+    const unit = $('scoreUnit').value === 'lb' ? 'lb' : 'kg';
+    const bwLabel = $('scoreBwLabel');
+    const totalLabel = $('scoreTotalLabel');
+    if (bwLabel) bwLabel.textContent = `Poids corporel (${unit})`;
+    if (totalLabel) totalLabel.textContent = `Total SBD (${unit})`;
+  }
+
+  function scheduleSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 250);
+  }
+
+  function saveState() {
+    try {
+      const payload = {
+        equipment,
+        targetWeight: $('targetWeight').value,
+        topReps: $('topReps').value,
+        warmupBar: $('warmupBar').value,
+        warmupIncrement: $('warmupIncrement').value,
+        charge: $('charge').value,
+        reps: $('reps').value,
+        rpe: $('rpe').value,
+        targetRm: $('targetRm').value,
+        targetReps: $('targetReps').value,
+        targetRpe: $('targetRpe').value,
+        targetIncrement: $('targetIncrement').value,
+        plateMode: $('plateMode').value,
+        plateBar: $('plateBar').value,
+        plateTotal: $('plateTotal').value,
+        scoreUnit: $('scoreUnit').value,
+        scoreSex: $('scoreSex').value,
+        scoreEquipment: $('scoreEquipment').value,
+        scoreBwKg: scoreCanonical.bwKg,
+        scoreTotalKg: scoreCanonical.totalKg
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (_) { /* ignore quota / private mode */ }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function applySavedState(saved) {
+    if (!saved || typeof saved !== 'object') return;
+    if (saved.equipment) setEquipment(saved.equipment);
+    ['targetWeight','topReps','warmupBar','warmupIncrement','charge','reps','rpe','targetRm','targetReps','targetRpe','targetIncrement','plateMode','plateTotal','scoreUnit','scoreSex','scoreEquipment']
+      .forEach(id => {
+        if (saved[id] != null && $(id)) $(id).value = String(saved[id]);
+      });
+    if (Number.isFinite(saved.scoreBwKg)) scoreCanonical.bwKg = saved.scoreBwKg;
+    if (Number.isFinite(saved.scoreTotalKg)) scoreCanonical.totalKg = saved.scoreTotalKg;
+    scoreCanonical.unit = $('scoreUnit').value;
   }
 
   function renderWarmup() {
@@ -299,94 +412,280 @@
       equipment, barWeight:$('warmupBar').value, minimum:5
     });
     $('warmupBody').innerHTML = '';
+    lastWarmupCopy = '';
     if (plan.error) { setMessage($('warmupMessage'), plan.error, 'error'); return; }
-    setMessage($('warmupMessage'), plan.note, plan.note ? 'warn' : '');
-    $('warmupBody').innerHTML = plan.rows.map((r,i) => `<tr><td>${i+1}${r.top?' — top set':''}</td><td>${r.reps}</td><td>${r.label}</td><td><strong>${r.weight.toFixed(r.weight%1?1:0)} lb</strong></td></tr>`).join('');
+
+    const notes = [];
+    if (plan.note) notes.push(plan.note);
+    if (plan.requested != null && plan.achievable != null && Math.abs(plan.requested - plan.achievable) > 1e-9) {
+      notes.push(`Cible demandée : ${formatWeight(plan.requested)} lb · Charge réalisable : ${formatWeight(plan.achievable)} lb`);
+    }
+    setMessage($('warmupMessage'), notes.join(' '), notes.length ? 'warn' : '');
+    $('warmupBody').innerHTML = plan.rows.map((r,i) => `<tr><td>${i+1}${r.top?' — top set':''}</td><td>${r.reps}</td><td>${r.label}</td><td><strong>${formatWeight(r.weight)} lb</strong></td></tr>`).join('');
+    lastWarmupCopy = plan.rows.map((r,i) => `${i+1}. ${r.reps} reps · ${r.label} · ${formatWeight(r.weight)} lb`).join('\n');
   }
 
   function renderRm() {
     const out = estimate1RM($('charge').value,$('reps').value,$('rpe').value);
-    if (!out) { lastEstimatedRm=null; $('rmResult').textContent='1RM estimé : --'; return; }
-    lastEstimatedRm=out.value;
-    $('rmResult').textContent=`1RM estimé : ${out.value.toFixed(1)} lb · intensité ${(out.intensity*100).toFixed(1)} %`;
+    if (!out) {
+      lastEstimatedRm = null;
+      lastRmCopy = '';
+      $('rmResult').innerHTML = '<span class="result-primary">1RM estimé : --</span>';
+      return;
+    }
+    lastEstimatedRm = out.value;
+    const rounded = Math.round(out.value);
+    const intensity = `${(out.intensity * 100).toFixed(1)} %`;
+    $('rmResult').innerHTML =
+      `<span class="result-primary">≈ ${rounded} lb</span>` +
+      `<span class="result-secondary">Intensité : ${intensity}</span>`;
+    lastRmCopy = `1RM estimé ≈ ${rounded} lb · intensité ${intensity}`;
   }
 
   function renderTarget() {
     const out = targetLoad($('targetRm').value,$('targetReps').value,$('targetRpe').value,$('targetIncrement').value);
-    if (!out) { $('targetLoadResult').textContent='Charge cible : --'; return; }
-    $('targetLoadResult').textContent=`Charge réalisable : ${out.load.toFixed(out.load%1?1:0)} lb · théorique ${out.theoretical.toFixed(1)} lb · ${(out.intensity*100).toFixed(1)} %`;
+    if (!out) {
+      lastTargetCopy = '';
+      $('targetLoadResult').innerHTML = '<span class="result-primary">Charge cible : --</span>';
+      return;
+    }
+    const loadTxt = formatWeight(out.load);
+    const theoTxt = out.theoretical.toFixed(1);
+    const pctTxt = (out.intensity * 100).toFixed(1);
+    $('targetLoadResult').innerHTML =
+      `<span class="result-primary">Charge réalisable : ${loadTxt} lb</span>` +
+      `<span class="result-secondary">Charge théorique : ${theoTxt} lb · ${pctTxt} % du 1RM</span>`;
+    lastTargetCopy = `Charge réalisable : ${loadTxt} lb · Charge théorique : ${theoTxt} lb · ${pctTxt} % du 1RM`;
   }
 
-  function updatePlateMode() {
-    const cfg=PLATE_CONFIGS[$('plateMode').value];
-    $('plateBar').innerHTML=cfg.bars.map(b=>`<option value="${b.v}">${b.l}</option>`).join('');
-    $('plateTotal').step=String(cfg.step);
-    $('plateHint').textContent=cfg.note;
+  function updatePlateMode(preserveBar) {
+    const cfg = PLATE_CONFIGS[$('plateMode').value];
+    const previousBar = preserveBar ? $('plateBar').value : null;
+    $('plateBar').innerHTML = cfg.bars.map(b => `<option value="${b.v}">${b.l}</option>`).join('');
+    if (previousBar && cfg.bars.some(b => String(b.v) === String(previousBar))) {
+      $('plateBar').value = previousBar;
+    }
+    $('plateTotal').step = String(cfg.step);
+    $('plateHint').textContent = cfg.note;
     renderPlates();
   }
 
   function renderPlates() {
-    const cfg=PLATE_CONFIGS[$('plateMode').value];
-    const total=Number($('plateTotal').value), bar=Number($('plateBar').value);
-    const out=distributePlates(total,bar,cfg);
-    $('plateBody').innerHTML=''; $('plateVisual').innerHTML='';
-    if (out.error) { $('plateResult').textContent='--'; setMessage($('plateMessage'),out.error,'error'); return; }
-    const counts=new Map(); out.plates.forEach(p=>counts.set(p.l,(counts.get(p.l)||0)+1));
-    const summary=[...counts.entries()].map(([l,q])=>`${q}× ${l} ${cfg.unit}`).join(' + ') || 'aucun disque';
-    $('plateResult').textContent=`Par côté : ${summary}`;
-    $('plateVisual').innerHTML='<span class="bar-label">BARRE</span>' + (cfg.collarsEach?'<span class="collar-label">COLLET 2,5</span>':'') + out.plates.map(p=>`<span class="plate ${p.s||''}" style="background:${p.c};color:${p.t||'#fff'}">${p.l}</span>`).join('');
-    $('plateBody').innerHTML=cfg.plates.filter(p=>counts.has(p.l)).map(p=>`<tr><td><strong>${p.l} ${cfg.unit}</strong></td><td>${counts.get(p.l)}</td><td>${counts.get(p.l)*2}</td></tr>`).join('');
-    const text=out.exact
-      ? `Poids confirmé : ${out.actualTotal} ${cfg.unit}${cfg.collarsEach?' · collets inclus':''}.`
-      : `Charge exacte impossible avec ce jeu. Charge inférieure la plus proche : ${out.actualTotal} ${cfg.unit} (écart ${out.difference.toFixed(2)} ${cfg.unit}).`;
-    setMessage($('plateMessage'),text,out.exact?'':'warn');
+    const cfg = PLATE_CONFIGS[$('plateMode').value];
+    const total = Number($('plateTotal').value), bar = Number($('plateBar').value);
+    const out = distributePlates(total, bar, cfg);
+    $('plateBody').innerHTML = '';
+    $('plateVisual').innerHTML = '';
+    lastPlatesCopy = '';
+    if (out.error) {
+      $('plateResult').innerHTML = '<span class="result-primary">--</span>';
+      setMessage($('plateMessage'), out.error, 'error');
+      return;
+    }
+    const counts = new Map();
+    out.plates.forEach(p => counts.set(p.l, (counts.get(p.l) || 0) + 1));
+    const summary = [...counts.entries()].map(([l, q]) => `${q}× ${l} ${cfg.unit}`).join(' + ') || 'aucun disque';
+    const confirmed = `${out.actualTotal} ${cfg.unit}`;
+    $('plateResult').innerHTML =
+      `<span class="result-primary">Par côté : ${summary}</span>` +
+      `<span class="result-secondary">Total confirmé : ${confirmed}${cfg.collarsEach ? ' · collets inclus' : ''}</span>`;
+    $('plateVisual').innerHTML =
+      '<span class="bar-label">BARRE</span>' +
+      (cfg.collarsEach ? '<span class="collar-label">COLLET 2,5</span>' : '') +
+      '<span class="side-label">1 côté</span>' +
+      out.plates.map(p => `<span class="plate ${p.s || ''}" style="background:${p.c};color:${p.t || '#fff'}">${p.l}</span>`).join('');
+    $('plateBody').innerHTML = cfg.plates.filter(p => counts.has(p.l)).map(p =>
+      `<tr><td><strong>${p.l} ${cfg.unit}</strong></td><td>${counts.get(p.l)}</td><td>${counts.get(p.l) * 2}</td></tr>`
+    ).join('');
+    const text = out.exact
+      ? `Charge exacte atteinte : ${confirmed}${cfg.collarsEach ? ' · collets inclus' : ''}.`
+      : `Charge exacte impossible avec ce jeu. Charge inférieure la plus proche : ${confirmed} (écart ${out.difference.toFixed(2)} ${cfg.unit}).`;
+    setMessage($('plateMessage'), text, out.exact ? '' : 'warn');
+    lastPlatesCopy = `Par côté : ${summary}\nTotal confirmé : ${confirmed}\n${text}`;
   }
 
   function syncCanonicalFromInputs() {
-    const unit=$('scoreUnit').value;
-    const bw=finiteNumber($('scoreBw').value,1,1000), total=finiteNumber($('scoreTotal').value,1,10000);
-    if (bw!==null) scoreCanonical.bwKg=unit==='lb'?bw*LB_TO_KG:bw;
-    if (total!==null) scoreCanonical.totalKg=unit==='lb'?total*LB_TO_KG:total;
-    scoreCanonical.unit=unit;
+    const unit = $('scoreUnit').value;
+    const bw = finiteNumber($('scoreBw').value, 1, 1000), total = finiteNumber($('scoreTotal').value, 1, 10000);
+    if (bw !== null) scoreCanonical.bwKg = unit === 'lb' ? bw * LB_TO_KG : bw;
+    if (total !== null) scoreCanonical.totalKg = unit === 'lb' ? total * LB_TO_KG : total;
+    scoreCanonical.unit = unit;
   }
 
   function renderScoreInputsFromCanonical() {
-    const unit=$('scoreUnit').value;
-    $('scoreBw').value=(unit==='lb'?scoreCanonical.bwKg/LB_TO_KG:scoreCanonical.bwKg).toFixed(2).replace(/\.00$/,'');
-    $('scoreTotal').value=(unit==='lb'?scoreCanonical.totalKg/LB_TO_KG:scoreCanonical.totalKg).toFixed(2).replace(/\.00$/,'');
-    scoreCanonical.unit=unit;
+    const unit = $('scoreUnit').value;
+    $('scoreBw').value = (unit === 'lb' ? scoreCanonical.bwKg / LB_TO_KG : scoreCanonical.bwKg).toFixed(2).replace(/\.00$/, '');
+    $('scoreTotal').value = (unit === 'lb' ? scoreCanonical.totalKg / LB_TO_KG : scoreCanonical.totalKg).toFixed(2).replace(/\.00$/, '');
+    scoreCanonical.unit = unit;
+    updateScoreUnitLabels();
   }
 
   function renderScores() {
-    const out=calculateScores(scoreCanonical.bwKg,scoreCanonical.totalKg,$('scoreSex').value,$('scoreEquipment').value);
-    if (!out) { $('dotsScore').textContent=$('wilksScore').textContent=$('ipfGlScore').textContent='--'; setMessage($('scoreMessage'),'Entrées invalides.','error'); return; }
-    $('dotsScore').textContent=out.dots.toFixed(2); $('wilksScore').textContent=out.wilks.toFixed(2); $('ipfGlScore').textContent=out.ipfGl.toFixed(2);
-    setMessage($('scoreMessage'),out.notes.length?out.notes.join(' '):'Aucun plafonnement de poids corporel appliqué.',out.notes.length?'warn':'');
+    updateScoreUnitLabels();
+    const out = calculateScores(scoreCanonical.bwKg, scoreCanonical.totalKg, $('scoreSex').value, $('scoreEquipment').value);
+    if (!out) {
+      $('dotsScore').textContent = $('wilksScore').textContent = $('ipfGlScore').textContent = '--';
+      lastScoresCopy = '';
+      setMessage($('scoreMessage'), 'Entrées invalides.', 'error');
+      return;
+    }
+    $('dotsScore').textContent = out.dots.toFixed(2);
+    $('wilksScore').textContent = out.wilks.toFixed(2);
+    $('ipfGlScore').textContent = out.ipfGl.toFixed(2);
+    if (out.notes.length) {
+      setMessage($('scoreMessage'), out.notes.join(' '), 'warn');
+    } else {
+      setMessage($('scoreMessage'), '', '');
+    }
+    lastScoresCopy = `DOTS ${out.dots.toFixed(2)} · Wilks ${out.wilks.toFixed(2)} · IPF GL ${out.ipfGl.toFixed(2)}`;
+  }
+
+  function flashCopied(btn) {
+    const original = btn.textContent;
+    btn.textContent = 'Copié';
+    setTimeout(() => { btn.textContent = original; }, 1200);
+  }
+
+  function copyText(text, btn) {
+    if (!text) return;
+    const done = () => flashCopied(btn);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (_) { /* ignore */ }
+        document.body.removeChild(ta);
+        done();
+      });
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (_) { /* ignore */ }
+      document.body.removeChild(ta);
+      done();
+    }
+  }
+
+  function getCopyText(key) {
+    switch (key) {
+      case 'warmup': return lastWarmupCopy;
+      case 'rm': return lastRmCopy;
+      case 'target': return lastTargetCopy;
+      case 'plates': return lastPlatesCopy;
+      case 'scores': return lastScoresCopy;
+      default: return '';
+    }
+  }
+
+  function resetTool(key, { skipSave } = {}) {
+    if (key === 'warmup') {
+      setEquipment(DEFAULTS.equipment);
+      $('targetWeight').value = DEFAULTS.targetWeight;
+      $('topReps').value = DEFAULTS.topReps;
+      $('warmupBar').value = DEFAULTS.warmupBar;
+      $('warmupIncrement').value = DEFAULTS.warmupIncrement;
+      renderWarmup();
+    } else if (key === 'rm') {
+      $('charge').value = DEFAULTS.charge;
+      $('reps').value = DEFAULTS.reps;
+      $('rpe').value = DEFAULTS.rpe;
+      renderRm();
+    } else if (key === 'target') {
+      $('targetRm').value = DEFAULTS.targetRm;
+      $('targetReps').value = DEFAULTS.targetReps;
+      $('targetRpe').value = DEFAULTS.targetRpe;
+      $('targetIncrement').value = DEFAULTS.targetIncrement;
+      renderTarget();
+    } else if (key === 'plates') {
+      $('plateMode').value = DEFAULTS.plateMode;
+      updatePlateMode(false);
+      $('plateBar').value = DEFAULTS.plateBar;
+      $('plateTotal').value = DEFAULTS.plateTotal;
+      renderPlates();
+    } else if (key === 'scores') {
+      $('scoreUnit').value = DEFAULTS.scoreUnit;
+      $('scoreSex').value = DEFAULTS.scoreSex;
+      $('scoreEquipment').value = DEFAULTS.scoreEquipment;
+      scoreCanonical = {bwKg:DEFAULTS.scoreBwKg,totalKg:DEFAULTS.scoreTotalKg,unit:DEFAULTS.scoreUnit};
+      renderScoreInputsFromCanonical();
+      renderScores();
+    }
+    if (!skipSave) scheduleSave();
+  }
+
+  function resetAll() {
+    ['warmup','rm','target','plates','scores'].forEach(key => resetTool(key, { skipSave: true }));
+    scheduleSave();
   }
 
   function init() {
-    fillSelect($('topReps'),[1,2,3,4,5,6,7,8,9,10],5);
-    fillSelect($('reps'),[1,2,3,4,5,6,7,8,9,10,11,12],5);
-    fillSelect($('targetReps'),[1,2,3,4,5,6,7,8,9,10,11,12],3);
-    fillSelect($('rpe'),['10','9.5','9','8.5','8','7.5','7','6.5'],'8');
-    fillSelect($('targetRpe'),['10','9.5','9','8.5','8','7.5','7','6.5'],'8');
+    fillSelect($('topReps'), [1,2,3,4,5,6,7,8,9,10], DEFAULTS.topReps);
+    fillSelect($('reps'), [1,2,3,4,5,6,7,8,9,10,11,12], DEFAULTS.reps);
+    fillSelect($('targetReps'), [1,2,3,4,5,6,7,8,9,10,11,12], DEFAULTS.targetReps);
+    fillSelect($('rpe'), ['10','9.5','9','8.5','8','7.5','7','6.5'], DEFAULTS.rpe);
+    fillSelect($('targetRpe'), ['10','9.5','9','8.5','8','7.5','7','6.5'], DEFAULTS.targetRpe);
 
-    document.querySelectorAll('#warmupEquipment button').forEach(btn=>btn.addEventListener('click',()=>{
-      equipment=btn.dataset.equip;
-      document.querySelectorAll('#warmupEquipment button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
+    const saved = loadState();
+    applySavedState(saved);
+    updatePlateMode(true);
+    if (saved && saved.plateBar != null) {
+      const savedBar = String(saved.plateBar);
+      if (PLATE_CONFIGS[$('plateMode').value].bars.some(b => String(b.v) === savedBar)) {
+        $('plateBar').value = savedBar;
+      }
+    }
+    renderScoreInputsFromCanonical();
+
+    document.querySelectorAll('#warmupEquipment button').forEach(btn => btn.addEventListener('click', () => {
+      setEquipment(btn.dataset.equip);
       renderWarmup();
+      scheduleSave();
     }));
-    ['targetWeight','topReps','warmupBar','warmupIncrement'].forEach(id=>$(id).addEventListener('input',renderWarmup));
-    ['charge','reps','rpe'].forEach(id=>$(id).addEventListener('input',renderRm));
-    ['targetRm','targetReps','targetRpe','targetIncrement'].forEach(id=>$(id).addEventListener('input',renderTarget));
-    $('useEstimatedRm').addEventListener('click',()=>{ if(lastEstimatedRm){$('targetRm').value=lastEstimatedRm.toFixed(1);renderTarget();} });
-    $('plateMode').addEventListener('change',updatePlateMode); $('plateBar').addEventListener('change',renderPlates); $('plateTotal').addEventListener('input',renderPlates);
-    $('scoreUnit').addEventListener('change',()=>{renderScoreInputsFromCanonical();renderScores();});
-    ['scoreBw','scoreTotal'].forEach(id=>$(id).addEventListener('input',()=>{syncCanonicalFromInputs();renderScores();}));
-    ['scoreSex','scoreEquipment'].forEach(id=>$(id).addEventListener('change',renderScores));
 
-    renderWarmup(); renderRm(); renderTarget(); updatePlateMode(); renderScores();
+    const onChangeSave = fn => () => { fn(); scheduleSave(); };
+    ['targetWeight','topReps','warmupBar','warmupIncrement'].forEach(id => $(id).addEventListener('input', onChangeSave(renderWarmup)));
+    ['charge','reps','rpe'].forEach(id => $(id).addEventListener('input', onChangeSave(renderRm)));
+    ['targetRm','targetReps','targetRpe','targetIncrement'].forEach(id => $(id).addEventListener('input', onChangeSave(renderTarget)));
+    $('useEstimatedRm').addEventListener('click', () => {
+      if (lastEstimatedRm) {
+        $('targetRm').value = lastEstimatedRm.toFixed(1);
+        renderTarget();
+        scheduleSave();
+      }
+    });
+    $('plateMode').addEventListener('change', () => { updatePlateMode(false); scheduleSave(); });
+    $('plateBar').addEventListener('change', onChangeSave(renderPlates));
+    $('plateTotal').addEventListener('input', onChangeSave(renderPlates));
+    $('scoreUnit').addEventListener('change', () => {
+      renderScoreInputsFromCanonical();
+      renderScores();
+      scheduleSave();
+    });
+    ['scoreBw','scoreTotal'].forEach(id => $(id).addEventListener('input', () => {
+      syncCanonicalFromInputs();
+      renderScores();
+      scheduleSave();
+    }));
+    ['scoreSex','scoreEquipment'].forEach(id => $(id).addEventListener('change', onChangeSave(renderScores)));
+
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => copyText(getCopyText(btn.dataset.copy), btn));
+    });
+    document.querySelectorAll('[data-reset]').forEach(btn => {
+      btn.addEventListener('click', () => resetTool(btn.dataset.reset));
+    });
+    $('resetAll').addEventListener('click', resetAll);
+
+    renderWarmup();
+    renderRm();
+    renderTarget();
+    renderPlates();
+    renderScores();
   }
 
-  document.addEventListener('DOMContentLoaded',init);
+  document.addEventListener('DOMContentLoaded', init);
 })(typeof window !== 'undefined' ? window : globalThis);
