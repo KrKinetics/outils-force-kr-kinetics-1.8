@@ -24,8 +24,8 @@ for (const id of CRITICAL_IDS) {
   assert.ok(html.includes(`id="${id}"`), `Missing critical id: ${id}`);
 }
 
-assert.ok(!html.includes('raw.githubusercontent.com'), 'External branding URL found in index.html');
-assert.ok(!html.includes('hero-logo'), 'Hero watermark marker found in index.html');
+assert.ok(!html.includes('raw.' + 'githubusercontent.com'), 'External branding URL found in index.html');
+assert.ok(!html.includes('hero-' + 'logo'), 'Hero watermark marker found in index.html');
 assert.ok(!html.includes('DM+Serif+Display') && !html.includes('DM Serif Display'), 'DM Serif Display should be removed');
 assert.ok(html.includes('styles.css'), 'styles.css link missing in index.html');
 assert.ok(fs.existsSync(path.join(root, 'styles.css')), 'Missing styles.css');

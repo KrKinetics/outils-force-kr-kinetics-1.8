@@ -36,7 +36,7 @@ jobs:
 
       - name: Ban external branding and hero watermark
         run: |
-          if grep -RIn --include='*.html' --include='*.js' --include='*.css' --include='*.md' --include='*.json' 'raw.githubusercontent.com' .; then
+          if grep -RIn --include='*.html' --include='*.js' --include='*.css' --include='*.md' --include='*.json' --exclude='test_app.js' 'raw.githubusercontent.com' .; then
             echo "External branding URL found"
             exit 1
           fi
