@@ -1,4 +1,0 @@
-KR Kinetics Pages build
-Logo header et filigrane centre
-Build: 2026-08-06T16:36:00-04:00
-Source commit: 1f9a666cfe387d6ede14e92afc2806332acbb5b7

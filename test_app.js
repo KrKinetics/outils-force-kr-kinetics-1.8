@@ -1,10 +1,37 @@
 'use strict';
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const app = require('./app.js');
 
 function approx(actual, expected, tolerance = 1e-6) {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
 }
+
+const root = __dirname;
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+
+const CRITICAL_IDS = [
+  'warmupEquipment', 'targetWeight', 'topReps', 'warmupBarWrap', 'warmupBar', 'warmupIncrement',
+  'warmupHint', 'warmupMessage', 'warmupBody', 'charge', 'reps', 'rpe', 'rmResult', 'targetRm',
+  'targetReps', 'targetRpe', 'targetIncrement', 'useEstimatedRm', 'targetLoadResult', 'plateMode',
+  'plateBar', 'plateTotal', 'plateHint', 'plateResult', 'plateVisual', 'plateMessage', 'plateBody',
+  'scoreUnit', 'scoreSex', 'scoreEquipment', 'scoreBw', 'scoreTotal', 'dotsScore', 'wilksScore',
+  'ipfGlScore', 'scoreMessage', 'buildMeta'
+];
+
+for (const id of CRITICAL_IDS) {
+  assert.ok(html.includes(`id="${id}"`), `Missing critical id: ${id}`);
+}
+
+assert.ok(!html.includes('raw.githubusercontent.com'), 'External branding URL found in index.html');
+assert.ok(!html.includes('hero-logo'), 'Hero watermark marker found in index.html');
+assert.ok(fs.existsSync(path.join(root, 'assets', 'kr-logo-lockup.png')), 'Missing lockup logo');
+assert.ok(fs.existsSync(path.join(root, 'assets', 'kr-monogram.png')), 'Missing monogram logo');
+assert.ok(fs.existsSync(path.join(root, 'build.json')), 'Missing build.json');
+
+const build = JSON.parse(fs.readFileSync(path.join(root, 'build.json'), 'utf8'));
+assert.ok(build.version && build.commit, 'build.json must include version and commit');
 
 for (const barWeight of [10, 15, 20, 33, 35, 45]) {
   for (const target of [barWeight, barWeight + 1, barWeight + 5, 100, 515]) {

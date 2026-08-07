@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run unit tests
+        run: node test_app.js
+
+      - name: Verify essential files
+        run: |
+          test -f index.html
+          test -f app.js
+          test -f test_app.js
+          test -f build.json
+          test -f .nojekyll
+          test -f assets/kr-logo-lockup.png
+          test -f assets/kr-monogram.png
+
+      - name: Ban external branding and hero watermark
+        run: |
+          if grep -RIn --include='*.html' --include='*.js' --include='*.css' --include='*.md' --include='*.json' 'raw.githubusercontent.com' .; then
+            echo "External branding URL found"
+            exit 1
+          fi
+          if grep -n 'hero-logo' index.html; then
+            echo "Hero watermark class found in index.html"
+            exit 1
+          fi
