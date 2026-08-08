@@ -2,6 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const core = require('./force-core.js');
 const app = require('./app.js');
 
 function approx(actual, expected, tolerance = 1e-6) {
@@ -10,6 +11,19 @@ function approx(actual, expected, tolerance = 1e-6) {
 
 const root = __dirname;
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const appSource = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const coreSource = fs.readFileSync(path.join(root, 'force-core.js'), 'utf8');
+
+assert.strictEqual(app, core, 'app.js must re-export the same canonical force-core module');
+assert.ok(fs.existsSync(path.join(root, 'force-core.js')), 'Missing force-core.js');
+assert.ok(html.includes('force-core.js'), 'index.html must load force-core.js');
+assert.ok(html.indexOf('force-core.js') < html.indexOf('app.js'), 'force-core.js must load before app.js');
+assert.ok(appSource.includes("require('./force-core.js')"), 'app.js must require force-core.js in Node');
+assert.ok(!/function\s+targetLoad\s*\(/.test(appSource), 'app.js must not redefine targetLoad');
+assert.ok(!/function\s+buildWarmupPlan\s*\(/.test(appSource), 'app.js must not redefine buildWarmupPlan');
+assert.ok(!/function\s+estimate1RM\s*\(/.test(appSource), 'app.js must not redefine estimate1RM');
+assert.ok(!/const\s+RPE_TABLE\s*=/.test(appSource), 'app.js must not redefine RPE_TABLE');
+assert.ok(!/document\.|localStorage|addEventListener|getElementById|clipboard|querySelector/.test(coreSource), 'force-core.js must stay DOM-free');
 
 const CRITICAL_IDS = [
   'warmupEquipment', 'targetWeight', 'topReps', 'warmupBarWrap', 'warmupBar', 'warmupIncrement',
@@ -204,6 +218,32 @@ assert.equal(nextSame.load, baseTarget.load);
 assert.ok(app.RPE_LABELS['8'].includes('2'));
 assert.ok(app.RPE_LABELS['10'].includes('aucune'));
 assert.ok(app.RPE_LABELS['9.5'].includes('presque'));
+
+assert.equal(core.roundToIncrement(283.5, 0.5), 283.5);
+assert.equal(core.roundToIncrement(283.5, 2.5), 282.5);
+assert.equal(core.roundToIncrement(283.5, 5), 285);
+assert.equal(core.roundToIncrement(283.5, 10), 280);
+
+const rpeKeys = Object.keys(core.RPE_TABLE);
+assert.equal(rpeKeys.length, 8, 'RPE_TABLE must expose 8 RPE levels');
+let rpeCellCount = 0;
+for (const key of rpeKeys) {
+  assert.equal(core.RPE_TABLE[key].length, 12, `RPE ${key} must expose 12 reps`);
+  rpeCellCount += core.RPE_TABLE[key].length;
+  for (const intensity of core.RPE_TABLE[key]) {
+    assert.ok(Number.isFinite(intensity) && intensity > 0 && intensity <= 1);
+  }
+}
+assert.equal(rpeCellCount, 96, 'RPE_TABLE must expose 8 × 12 = 96 coefficients');
+
+const est = core.estimate1RM(315, 5, '8');
+assert.ok(est);
+approx(est.value, 315 / core.RPE_TABLE['8'][4]);
+
+assert.equal(core.estimate1RM(NaN, 5, '8'), null);
+assert.equal(core.targetLoad(NaN, 5, '8', 5), null);
+assert.equal(core.estimate1RM(Infinity, 5, '8'), null);
+assert.equal(core.targetLoad(Infinity, 5, '8', 5), null);
 
 const lbFromKg = 100 / app.LB_TO_KG;
 const kgRoundTrip = lbFromKg * app.LB_TO_KG;

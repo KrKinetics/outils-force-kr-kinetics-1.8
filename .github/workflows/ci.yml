@@ -24,9 +24,11 @@ jobs:
         run: |
           test -f index.html
           test -f app.js
+          test -f force-core.js
           test -f test_app.js
           test -f styles.css
           test -f build.json
+          test -f package.json
           test -f .nojekyll
           test -f assets/kr-logo-lockup.png
           test -f assets/kr-monogram.png

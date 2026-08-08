@@ -1,0 +1,35 @@
+{
+  "name": "@krkinetics/force-core",
+  "version": "1.10.0",
+  "description": "Canonical DOM-free KR Kinetics Force calculation core (1RM, target load, warm-up, plates, scores).",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "force-core.js",
+  "exports": {
+    ".": "./force-core.js",
+    "./force-core": "./force-core.js",
+    "./force-core.js": "./force-core.js"
+  },
+  "files": [
+    "force-core.js",
+    "package.json",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test_app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KrKinetics/outils-force-kr-kinetics-1.8.git"
+  },
+  "keywords": [
+    "kr-kinetics",
+    "force",
+    "strength",
+    "rpe",
+    "1rm"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

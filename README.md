@@ -14,10 +14,12 @@ Produit statique (HTML + CSS + JS), sans framework.
 
 | Fichier | Rôle |
 |---------|------|
+| `force-core.js` | Cœur de calcul canonique (DOM-free) : RPE, 1RM, charge cible, warm-up, plaques, scores |
+| `package.json` | Export `@krkinetics/force-core` pour dépendance Git épinglée |
 | `index.html` | Interface, meta / OG, structure des outils |
 | `styles.css` | Styles et breakpoints responsive |
-| `app.js` | Logique métier + UI (formules, rendu, persistance locale) |
-| `test_app.js` | Tests Node (formules + garde-fous structurels) |
+| `app.js` | Câblage UI / navigateur uniquement (importe `force-core.js`) |
+| `test_app.js` | Tests Node sur le même cœur canonique |
 | `build.json` | Version / commit affichés dans le footer |
 | `assets/` | Logos et favicons locaux |
 
@@ -57,8 +59,25 @@ node test_app.js
 
 Voir `build.json` et le footer du site (`Build x.y.z · commit`).
 
+## Consommation du cœur (dépendance Git)
+
+```json
+{
+  "dependencies": {
+    "@krkinetics/force-core": "git+https://github.com/KrKinetics/outils-force-kr-kinetics-1.8.git#<commit-sha>"
+  }
+}
+```
+
+Puis :
+
+```js
+const force = require('@krkinetics/force-core');
+```
+
 ## Contribution
 
-- Ne pas modifier les formules de calcul sans ajouter / mettre à jour les tests dans `test_app.js`
+- Une seule source de calcul : `force-core.js` — ne pas dupliquer les formules dans `app.js`
+- Ne pas modifier les formules sans ajouter / mettre à jour les tests dans `test_app.js`
 - Préserver tous les IDs JS existants dans `index.html` / `app.js`
 - Une seule méthode Pages : branche `main`, root — ne pas ajouter un second mécanisme de publication
